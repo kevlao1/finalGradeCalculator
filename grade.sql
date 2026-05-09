@@ -1,0 +1,33 @@
+CREATE TABLE IF NOT EXISTS students (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL, 
+    email TEXT NOT NULL UNIQUE 
+);
+
+CREATE TABLE IF NOT EXISTS courses (
+    id SERIAL PRIMARY KEY,
+    course_name TEXT NOT NULL
+);
+
+CREATE TABLE IF NOT EXISTS grades (
+    id SERIAL PRIMARY KEY,
+    student_id INTEGER REFERENCES students(id),
+    course_id INTEGER REFERENCES courses(id),
+    grade_name TEXT NOT NULL,
+    score NUMERIC NOT NULL,
+    max_score NUMERIC DEFAULT 100,
+    weight NUMERIC
+);
+
+SELECT
+    students.name,
+    students.email,
+    courses.course_name,
+    grades.grade_name,
+    grades.score,
+    grades.max_score,
+    grades.weight
+FROM grades
+JOIN students ON grades.student_id = students.id
+JOIN courses ON grades.course_id = courses.id;
+
