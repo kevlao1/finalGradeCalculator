@@ -7,7 +7,7 @@ class StudentGradeCalculator:
     Functions will implement the personal grade of each student
     """
 
-    @staticmethod
+    @staticmethod   
     def total_score(database):
         """
         database: list of numbers
@@ -25,3 +25,4 @@ class StudentGradeCalculator:
             total += (score / max_score) * weight
 
         return total * 100
+
