@@ -1,5 +1,5 @@
 import "./styles.css";
-import GradeCalculator from "./Components/GradeCalculator";
+import GradeCalculator from "./components/GradeCalculator";
 
 function App() {
   return (
