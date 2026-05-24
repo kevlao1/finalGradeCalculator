@@ -1,32 +1,63 @@
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 
 const AssignmentForm = ({ onAddAssignment }) => {
+  // State variables for form fields and error message
   const [assignmentName, setAssignmentName] = useState("");
-  const [category, setCategory] = useState("No category");
-  const [assignmentScore, setAssignmentScore] = useState(0);
-  const [totalScore, setTotalScore] = useState(0);
+  const [category, setCategory] = useState("");
+  const [assignmentScore, setAssignmentScore] = useState("");
+  const [totalScore, setTotalScore] = useState("");
+  const [error, setError] = useState("");
 
-  const handleAddAssignment = () => {
-    if (assignmentName && category && assignmentScore && totalScore) {
-      const newAssignment = {
-        assignmentName,
-        category,
-        assignmentScore,
-        totalScore,
-      };
+  // Function to reset form fields and error message
+  const resetForm = () => {
+    setAssignmentName("");
+    setCategory("");
+    setAssignmentScore("");
+    setTotalScore("");
+    setError("");
+  };
 
-      onAddAssignment(newAssignment);
-      setAssignmentName("");
-      setCategory("");
-      setAssignmentScore(0);
-      setTotalScore(0);
-    } else {
-      alert("Please enter valid assignment details.");
+  // Handler for assignment submission
+  const handleAddAssignment = (e) => {
+    // Prevent form submission on Enter key press
+    e.preventDefault();
+
+    // Trim inputs and convert scores to numbers
+    const name = assignmentName.trim();
+    const earned = Number(assignmentScore);
+    const total = Number(totalScore);
+
+    // Validate inputs
+    if (!name) {
+      setError("Assignment name cannot be empty.");
+      return;
     }
+    if (isNaN(total) || total <= 0) {
+      setError("Total score must be a positive number.");
+      return;
+    }
+    if (isNaN(earned) || earned < 0 || earned > total) {
+      setError("Assignment score must be non-negative and cannot exceed total score.");
+      return;
+    }
+
+    // Create new assignment object
+    const newAssignment = {
+      assignmentName: name,
+      category: category || "No category",
+      assignmentScore: earned,
+      totalScore: total,
+    };
+
+    // Call the onAddAssignment prop function with the new assignment
+    onAddAssignment(newAssignment);
+    resetForm();
   };
 
   return (
-    <div className="section1">
+    // Form for adding a new assignment
+    <form className="section1" onSubmit={handleAddAssignment} noValidate>
       <div>
         <p>Assignment</p>
         <input
@@ -35,10 +66,12 @@ const AssignmentForm = ({ onAddAssignment }) => {
           onChange={(e) => setAssignmentName(e.target.value)}
         />
       </div>
+
+      {/* UI for each category */}
       <div>
         <p>Category</p>
         <select value={category} onChange={(e) => setCategory(e.target.value)}>
-          <option value="No category"></option>
+          <option value="">No category</option>
           <option value="Homework">Homework</option>
           <option value="Midterm">Midterm</option>
           <option value="Final">Final</option>
@@ -50,7 +83,7 @@ const AssignmentForm = ({ onAddAssignment }) => {
         <input
           type="number"
           value={assignmentScore}
-          onChange={(e) => setAssignmentScore(Number(e.target.value))}
+          onChange={(e) => setAssignmentScore(e.target.value)}
         />
       </div>
       <div>
@@ -58,14 +91,25 @@ const AssignmentForm = ({ onAddAssignment }) => {
         <input
           type="number"
           value={totalScore}
-          onChange={(e) => setTotalScore(Number(e.target.value))}
+          onChange={(e) => setTotalScore(e.target.value)}
         />
       </div>
+      {/* Display error message if there is an error */}
+      {error && (
+        <div role="alert" style={{ color: "red", marginTop: 8}}>
+          {error}
+        </div>
+      )}
+      {/* Button to add the assignment */}
       <div>
-        <button onClick={handleAddAssignment}>Add</button>
+        <button type="submit">Add</button>
       </div>
-    </div>
+    </form>
   );
+};
+
+AssignmentForm.propTypes = {
+  onAddAssignment: PropTypes.func.isRequired,
 };
 
 export default AssignmentForm;
