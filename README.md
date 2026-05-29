@@ -1,8 +1,14 @@
 Hi! This is for the UCLA CS35L Final Project. Below will be guides and notes before running this repository.
 
+## To-do list:
+- Combine back and front ends to work
+- Modification for proper weighting and categories
+- Addition of online functionalities/account system
+- Movement to a server database (non-local)
+
 # Website notes
 ## Read before doing *any* frontend/UI development.
-1. We are using gh-files to run the website, meaning that you will need to install a package before editing and deploying the page. Whenever you can, go to your local repository files (most likely ending with ~/finalGradeCalculator), run "cd docs" and "npm install" to install the package locally. It is set up so that you only need to install the package once, and *locally*. Do not remove docs/node_modules/ in .gitignore unless if we are removing gh-files. (In the case where you do not run "cd docs", it will create a new package.json and package-lock.json file and a big folder called node-modules. *Delete all 3 of them, then reinstall in the docs directory.*)
+1. We are using gh-files to run the website, meaning that you will need to install a package before editing and deploying the page. Whenever you can, go to your local repository files (most likely ending with ~/finalGradeCalculator), run "cd docs" and "npm install" to install the package locally. It is set up so that you only need to install the package once, and *locally*. Do not remove docs/node_modules/ in .gitignore unless if we are removing gh-files. (In the case where you do not run "cd docs", it will create a new package.json and package-lock.json file and a big folder called node-modules. *Delete all 3 of them, then reinstall in the docs directory.*) DO NOT CHANGE THE NAME OF DOCS UNLESS IF WE STOP USING GITHUB PAGES!
 2. Since you guys are using .tsx files for the website, you will have to run a command for the code to compile the .tsx file for it to operate as a .js file, which is "npm run deploy". It will NOT build correctly if you do not run this command. The current homepage in package.json is set to https://kevlao1.github.io/finalGradeCalculator, but you should not have any issue running it locally even with that set. If you somehow see the build folder that is running the website, DO NOT EDIT ANYTHING INSIDE THE FOLDER! Instead, only directly edit the .tsx file then recompile with the same command.
 3. Since GitHub Pages runs *only* the website and not the servers behind it, we will need to use another free service for data storage. I will look into it in a bit, but if not, the server will have to be one of our computers.
 
@@ -22,6 +28,6 @@ Hi! This is for the UCLA CS35L Final Project. Below will be guides and notes bef
 1. Code your implementation first, assuming you'll have all the functions of the module later on
 2. Install the module in your virtual environment
 3. Run "pip freeze > requirements.txt", this will capture all of the modules in the virtual environment into the requirements.txt file. Note that this will *overwrite* the file, so make sure you have all the necessary modules before overwriting it
-4. Push and commit requirements.txt (and your modified code if it is ready)
+4. Push and commit requirements.txt (and your modified code if it is ready) both locally *and* to GitHub.
 
 (More guides/notes may be added based on necessity.)
