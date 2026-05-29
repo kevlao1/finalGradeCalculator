@@ -2,3 +2,5 @@ __pycache__/
 *.pyc
 .env
 docs/node_modules/
+.venv/
+docs/build
