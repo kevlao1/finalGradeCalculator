@@ -1,5 +1,7 @@
 from fastapi import FastAPI
 from pydantic import BaseModel
+from Calculator import StatsTools
+from student_grade import StudentGradeCalculator
 from typing import List
 import psycopg2
 
@@ -102,3 +104,45 @@ def upload_grades(data: UploadRequest):
     finally:
         cur.close()
         conn.close()
+
+@app.get("/calculate_grade/{student_id}/{course_id}")
+def get_final_grade(student_id: int, course_id: int):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        cur.execute(
+            """
+            SELECT score, max_score, weight
+            FROM grades
+            WHERE student_id = %s AND course_id = %s;
+            """,
+            (student_id, course_id)
+            )
+        fetched_grades = cur.fetchall()
+        if not fetched_grades: 
+            return {"message": "No grades found!"}
+        calc_input = []
+        for assign_num in range(0, len(fetched_grades)):
+            if fetched_grades[assign_num][1] == 0:
+                return {"message": "0 found as a maximum score!"}
+            calc_input.append({
+                "score": float(fetched_grades[assign_num][0]),
+                "max_score": float(fetched_grades[assign_num][1]),
+                "weight": float(fetched_grades[assign_num][2])
+            })
+        final_grade = StudentGradeCalculator.total_score(calc_input)
+        return{
+            "student_id": student_id,
+            "course_id": course_id,
+            "final_grade_percentage": final_grade
+        }
+    except Exception as e:
+        conn.rollback()
+        return{"error": str(e)}
+
+    finally:
+        cur.close()
+        conn.close()
+
+
+    
