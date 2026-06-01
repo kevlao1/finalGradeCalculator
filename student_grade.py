@@ -1,6 +1,8 @@
 from collections import Counter
 import psycopg2
 
+# DEPRECATED, CURRENTLY NOT IN USE (possible reallocation towards other purposes?)
+
 class StudentGradeCalculator:
     """
     Functions will receive data from the database
@@ -32,19 +34,4 @@ class StudentGradeCalculator:
         # Return total score (in %)
         return total * 100
     
-    @staticmethod
-    def total_score(database):
-        """
-        database: list of category percentages (index 0) and weights (index 1)
-        calculate the total score of weighted scores
-
-        Consideration: Extra credit -> manual correction option?
-        """
-        # Automatic return if empty
-        if not database:
-            return 0
-        # Sum of all category weights
-        total = 0
-        for item in database:
-            
 

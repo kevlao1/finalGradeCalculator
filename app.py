@@ -77,26 +77,45 @@ def upload_grades(data: UploadRequest):
         course_id = cur.fetchone()[0]
         
         for category in data.grades:
-            current_category_name = category.category_name 
     
+            current_category_name = category.category_name
+            current_weight = category.weight
+    
+            cur.execute(
+                """
+                INSERT INTO categories (course_id, category_name, weight)
+                VALUES (%s, %s, %s)
+                ON CONFLICT (course_id, category_name) DO NOTHING;
+                """,
+                (course_id, current_category_name, current_weight)
+            )
+
+            cur.execute(
+                """
+                SELECT id FROM categories 
+                WHERE course_id = %s AND category_name = %s;
+                """,
+                (course_id, current_category_name)
+            )
+            category_id = cur.fetchone()
+
             for grade in category.assignment_list:
-        
+
                 cur.execute(
                     """
                     INSERT INTO grades 
-                    (category, student_id, course_id, grade_name, score, max_score)
-                    VALUES (%s, %s, %s, %s, %s, %s);
+                    (category_id, student_id, grade_name, score, max_score)
+                    VALUES (%s, %s, %s, %s, %s);
                     """,
                     (
-                        current_category_name, 
-                        student_id,
-                        course_id,
-                        grade.grade_name,
-                        grade.score,
-                        grade.max_score
+                    category_id,
+                    student_id,
+                    grade.grade_name,
+                    grade.score,
+                    grade.max_score
                     )
                 )
-
+                 
         conn.commit()
 
         return {
@@ -121,30 +140,42 @@ def get_final_grade(student_id: int, course_id: int):
     try:
         cur.execute(
             """
-            SELECT score, max_score, weight
-            FROM grades
-            WHERE student_id = %s AND course_id = %s;
+            SELECT 
+                c.category_name, 
+                SUM(g.score) as category_earned, 
+                SUM(g.max_score) as category_total,
+                c.weight
+            FROM grades g
+            JOIN categories c ON g.category_id = c.id
+            WHERE g.student_id = %s AND c.course_id = %s
+            GROUP BY c.category_name, c.weight;
             """,
             (student_id, course_id)
             )
-        fetched_grades = cur.fetchall()
-        if not fetched_grades: 
+        
+        fetched_cats = cur.fetchall()
+        if not fetched_cats: 
             return {"message": "No grades found!"}
-        calc_input = []
-        for assign_num in range(0, len(fetched_grades)):
-            if fetched_grades[assign_num][1] == 0:
-                return {"message": "0 found as a maximum score!"}
-            calc_input.append({
-                "score": float(fetched_grades[assign_num][0]),
-                "max_score": float(fetched_grades[assign_num][1]),
-                "weight": float(fetched_grades[assign_num][2])
-            })
-        final_grade = StudentGradeCalculator.total_score(calc_input)
+        
+        final_grade = 0
+        
+        for cat_num in fetched_cats:
+            category_name = cat_num[0]
+            cat_score = cat_num[1]
+            cat_maxscore = cat_num[2]
+            cat_weight = cat_num[3]
+
+            if cat_score == 0:
+                return {"message": f"0 found as a maximum score in category: {category_name}!"}
+            
+            final_grade += (cat_score/cat_maxscore)*cat_weight
+        
         return{
             "student_id": student_id,
             "course_id": course_id,
             "final_grade_percentage": final_grade
         }
+    
     except Exception as e:
         conn.rollback()
         return{"error": str(e)}
