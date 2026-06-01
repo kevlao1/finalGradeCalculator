@@ -31,4 +31,10 @@ Hi! This is for the UCLA CS35L Final Project. Below will be guides and notes bef
 3. Run "pip freeze > requirements.txt", this will capture all of the modules in the virtual environment into the requirements.txt file. Note that this will *overwrite* the file, so make sure you have all the necessary modules before overwriting it
 4. Push and commit requirements.txt (and your modified code if it is ready) both locally *and* to GitHub.
 
+# To-do list and plan (6/1)
+1. Rewrite grade.sql and app.py 
+2. Reconsider the design pattern and deal with the relationship between personal_grade, overall_grade 
+and database
+3. Prepare the pytest for the SQL database
+
 (More guides/notes may be added based on necessity.)
