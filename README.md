@@ -1,7 +1,7 @@
 Hi! This is for the UCLA CS35L Final Project. Below will be guides and notes before running this repository.
 
-## To-do list:
-- Rewrite app.py and grade.sql for categories
+## To-do list (as of 5/28 10:58 PM):
+- Rewrite app.py and grade.sql for categories, adapt student_grade.py to use SQL calculations rather than Python
 - Combine back and front ends to work
 - Modification for proper weighting and categories
 - Addition of online functionalities/account system

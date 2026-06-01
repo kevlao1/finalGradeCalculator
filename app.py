@@ -22,12 +22,17 @@ class GradeItem(BaseModel):
     max_score: float = 100.0
     weight: float
 
+class GradeCategory(BaseModel):
+    category_name: str
+    weight: float
+    assignment_list: list[GradeItem]
+
 
 class UploadRequest(BaseModel):
     student_name: str
     email: str
     course_name: str
-    grades: List[GradeItem]
+    grades: list[GradeCategory]
 
 @app.post("/upload_grades")
 def upload_grades(data: UploadRequest):
@@ -70,23 +75,27 @@ def upload_grades(data: UploadRequest):
             (data.course_name,)
         )
         course_id = cur.fetchone()[0]
-
-        for grade in data.grades:
-            cur.execute(
-                """
-                INSERT INTO grades
-                (student_id, course_id, grade_name, score, max_score, weight)
-                VALUES (%s, %s, %s, %s, %s, %s);
-                """,
-                (
-                    student_id,
-                    course_id,
-                    grade.grade_name,
-                    grade.score,
-                    grade.max_score,
-                    grade.weight
+        
+        for category in data.grades:
+            current_category_name = category.category_name 
+    
+            for grade in category.assignment_list:
+        
+                cur.execute(
+                    """
+                    INSERT INTO grades 
+                    (category, student_id, course_id, grade_name, score, max_score)
+                    VALUES (%s, %s, %s, %s, %s, %s);
+                    """,
+                    (
+                        current_category_name, 
+                        student_id,
+                        course_id,
+                        grade.grade_name,
+                        grade.score,
+                        grade.max_score
+                    )
                 )
-            )
 
         conn.commit()
 

@@ -1,5 +1,5 @@
 from collections import Counter
-import matplotlib.pyplot as plt
+import psycopg2
 
 class StudentGradeCalculator:
     """
@@ -8,21 +8,43 @@ class StudentGradeCalculator:
     """
 
     @staticmethod   
-    def total_score(database):
+    def category_score(database):
         """
-        database: list of numbers
+        database: list of grades in one assignment category
         calculate the total score of input data
+
+        CONSIDERATION: Extra credit assignments -> manual correction option?
         """
-        if not database:
-            return 0
+        # Automatic return if empty
+        if not database: 
+            return {"message": "No grades found!"}
         
+        # Sum of all assignment percentages
         total = 0
         for item in database:
             score = item["score"]
             max_score = item["max_score"]
-            weight = item["weight"]
-
-            total += (score / max_score) * weight
-
+            if max_score == 0:
+                return {"message": "0 found! Calculations stopped prematurely."}
+            total += (score / max_score)
+        # Divide by number of assignments
+        total /= len(database)
+        # Return total score (in %)
         return total * 100
+    
+    @staticmethod
+    def total_score(database):
+        """
+        database: list of category percentages (index 0) and weights (index 1)
+        calculate the total score of weighted scores
+
+        Consideration: Extra credit -> manual correction option?
+        """
+        # Automatic return if empty
+        if not database:
+            return 0
+        # Sum of all category weights
+        total = 0
+        for item in database:
+            
 
