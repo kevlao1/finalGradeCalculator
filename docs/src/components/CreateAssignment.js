@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 import PropTypes from "prop-types";
 
-const AssignmentForm = ({ onAddAssignment }) => {
+const AssignmentForm = ({ onAddAssignment, categories = [] }) => {
   // State variables for form fields and error message
   const [assignmentName, setAssignmentName] = useState("");
   const [category, setCategory] = useState("");
@@ -72,10 +72,9 @@ const AssignmentForm = ({ onAddAssignment }) => {
         <p>Category</p>
         <select value={category} onChange={(e) => setCategory(e.target.value)}>
           <option value="">No category</option>
-          <option value="Homework">Homework</option>
-          <option value="Midterm">Midterm</option>
-          <option value="Final">Final</option>
-          <option value="Quizzes">Quizzes</option>
+          {categories.map((c, i) => (
+            <option key={i} value={c.name}>{c.name}</option>
+          ))}
         </select>
       </div>
       <div>
@@ -110,6 +109,7 @@ const AssignmentForm = ({ onAddAssignment }) => {
 
 AssignmentForm.propTypes = {
   onAddAssignment: PropTypes.func.isRequired,
+  categories: PropTypes.array,
 };
 
 export default AssignmentForm;
