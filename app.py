@@ -13,6 +13,11 @@ from fastapi.security import OAuth2PasswordBearer
 from fastapi import Depends, HTTPException, status
 from datetime import datetime, timedelta, timezone
 
+# Key for token signing, MOVE TO .env FILE LATER
+PERM_KEY = "test_key"
+ALGO = "HS256"
+ACCESS_TOKEN_VALID_MINUTES = 60
+
 def get_password_hash(password: str):
     """Converts plaintext password to hash."""
     return pwd_context.hash(password)
@@ -20,6 +25,16 @@ def get_password_hash(password: str):
 def compare_password(plain_pass: str, hash_pass: str):
     """Compares inputted password to password hash"""
     return pwd_context.verify(plain_pass, hash_pass)
+
+def create_access_token(data: dict):
+    """Packages user data into a signed JWT."""
+    to_encode = data.copy()
+    # Expiry time
+    expire = datetime.now(timezone.utc) + timedelta(minutes=ACCESS_TOKEN_VALID_MINUTES)
+    to_encode.update({"exp": expire})
+    # Create encoded token string, signed with secret key
+    encoded_jwt = jwt.encode(to_encode, PERM_KEY, algorithm=ALGO)
+    return encoded_jwt
 
 app = FastAPI()
 
@@ -54,6 +69,10 @@ class RegisterRequest(BaseModel):
     username: str  
     name: str
     email: str
+    password: str
+
+class LoginRequest(BaseModel):
+    ident: str
     password: str
 
 @app.post("/upload_grades")
@@ -239,6 +258,62 @@ def register_user(data: RegisterRequest):
     except Exception as e:
         conn.rollback()
         return{"error": str(e)}
+    
+    finally:
+        cur.close()
+        conn.close()
+
+@app.post("/login")
+def user_login(data: LoginRequest):
+    conn = get_connection()
+    cur = conn.cursor()
+    try:
+        hash_password = get_password_hash(data.password)
+        
+        # Either email OR username works
+        cur.execute(
+            """
+            SELECT id, username, password_hash
+            FROM students
+            WHERE email = %s OR username = %s;
+            """,
+            (data.ident, data.ident)
+        )
+        user = cur.fetchone()
+
+        # User not found
+        if not user:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, 
+                detail="Incorrect email or password"
+            )
+        
+        user_id = user[0]
+        db_username = user[1]
+        db_password_hash = user[2]
+
+        # Password incorrect
+        if not compare_password(data.password, db_password_hash):
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED, 
+                detail="Incorrect email or password"
+            )
+        
+        # If password correct, temporary token created for user
+        token_data = {
+            "sub": str(user_id),
+            "username": db_username
+        }
+        access_token = create_access_token(token_data)
+
+        return {
+            "access_token": access_token,
+            "token_type": "bearer",
+            "message": f"Successfully logged in. Hello, {db_username}!"
+        }
+        
+    except Exception as e:
+        raise HTTPException(status=500, detail=str(e))
     
     finally:
         cur.close()
