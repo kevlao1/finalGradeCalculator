@@ -1,5 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Noto+Sans+Mono&display=swap");
 
+body {
+  background-color: rgb(181, 227, 242);
+}
+
 .login-page {
   font-family: "Noto Sans Mono", monospace;
   margin: 50px auto;
@@ -43,7 +47,28 @@ button:hover {
 }
 
 .error {
-  color: #dc3545;
+  color: #bf2f3e;
   font-size: 14px;
+  font-weight: bold;
   margin-bottom: 10px;
+}
+
+.success {
+  color: #186f45;
+  font-size: 16px;
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+.user-header {
+  font-family: "Noto Sans Mono", monospace;
+  background-color: #0d3653;
+  color: white;
+  padding: 12px 20px;
+  margin: 0px auto;
+  max-width: 4000px;
+  border-radius: 4px;
+  text-align: right;
+  font-size: 24px;
+  font-weight: bold;
 }
