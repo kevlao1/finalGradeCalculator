@@ -1,5 +1,6 @@
 from fastapi import FastAPI
-from pydantic import BaseModel
+from fastapi.middleware.cors import CORSMiddleware
+from pydantic import BaseModel, Field
 from Calculator import StatsTools
 from typing import List
 import psycopg2
@@ -36,7 +37,31 @@ def create_access_token(data: dict):
     encoded_jwt = jwt.encode(to_encode, PERM_KEY, algorithm=ALGO)
     return encoded_jwt
 
+oauth2 = OAuth2PasswordBearer(tokenUrl="login")
+
+def get_user_id(token: str = Depends(oauth2)):
+    """Decodes JWT, returns the user's ID."""
+    try:
+        payload = jwt.decode(token, PERM_KEY, algorithms=[ALGO])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid authentication token credentials")
+        return int(user_id)
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Access token has expired, please log in again.")
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Could not validate token credentials")
+
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://127.0.0.1:3000",
+                   "http://localhost:3000"], # Exactly match React's address
+    allow_credentials=True,
+    allow_methods=["*"], # Allows POST, GET, OPTIONS, other methods
+    allow_headers=["*"], # Allows Authorization header for JWT
+)
 
 def get_connection():
     return psycopg2.connect(
@@ -58,10 +83,7 @@ class GradeCategory(BaseModel):
     weight: float
     assignment_list: list[GradeItem]
 
-
 class UploadRequest(BaseModel):
-    student_name: str
-    email: str
     course_name: str
     grades: list[GradeCategory]
 
@@ -69,36 +91,18 @@ class RegisterRequest(BaseModel):
     username: str  
     name: str
     email: str
-    password: str
+    password: str = Field(..., max_length=72)
 
 class LoginRequest(BaseModel):
     ident: str
     password: str
 
 @app.post("/upload_grades")
-def upload_grades(data: UploadRequest):
+def upload_grades(data: UploadRequest, student_id: int = Depends(get_user_id)):
     conn = get_connection()
     cur = conn.cursor()
 
     try:
-        cur.execute(
-            """
-            INSERT INTO students (name, email)
-            VALUES (%s, %s)
-            ON CONFLICT (email) DO NOTHING;
-            """,
-            (data.student_name, data.email)
-        )
-
-        cur.execute(
-            """
-            SELECT id FROM students
-            WHERE email = %s;
-            """,
-            (data.email,)
-        )
-        student_id = cur.fetchone()[0]
-
         cur.execute(
             """
             INSERT INTO courses (course_name)
@@ -139,7 +143,7 @@ def upload_grades(data: UploadRequest):
                 """,
                 (course_id, current_category_name)
             )
-            category_id = cur.fetchone()
+            category_id = cur.fetchone()[1]
 
             for grade in category.assignment_list:
 
@@ -241,7 +245,7 @@ def register_user(data: RegisterRequest):
             VALUES (%s, %s, %s, %s)
             ON CONFLICT DO NOTHING RETURNING id;
             """,
-            (data.username, data.student_name, data.email, hash_password)
+            (data.username, data.name, data.email, hash_password)
         )  
 
         create_check = cur.fetchone()

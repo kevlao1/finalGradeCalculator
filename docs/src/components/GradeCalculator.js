@@ -9,7 +9,7 @@ const GradeCalculator = () => {
   const [weightedMode, setWeightedMode] = useState(false);
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryWeight, setNewCategoryWeight] = useState("");
-  
+  const [courseName, setCourseName] = useState("");
 
   const handleAddAssignment = (newAssignment) => {
     setAssignments([...assignments, newAssignment]);
@@ -95,6 +95,44 @@ const GradeCalculator = () => {
     return { final, breakdown };
   };
 
+  const handleSaveToDatabase = async () => {
+    const payload = {
+      course_name: courseName,     
+
+      grades: categories.map(cat => ({
+        category_name: cat.name,
+        weight: cat.weight,
+        assignment_list: assignments
+        .filter(a => a.category === cat.name)
+        .map(a => ({
+          grade_name: a.assignmentName,
+          score: a.assignmentScore,
+          max_score: a.totalScore
+        }))
+      }))
+    };
+    try{
+      const response = await fetch("http://127.0.0.1:8000/upload_grades", {
+        method: "POST",
+        headers:{
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("access_token")}`
+        },
+        body: JSON.stringify(payload),
+      });
+      const data = await response.json();
+      if(response.ok){
+        alert(data.message || "Grades saved to SQL");
+      } else{
+        alert("Save failed: " + (data.detail || "Unknown error"));
+      }
+    }
+    catch(error){
+      console.error("Network error:", error);
+      alert("Could not connect");
+    }
+  }
+  
   // Compatibility wrapper used by the UI — returns a single numeric percentage
   const calculateGrade = () => {
     const result = computeGradeDetailed(assignments, categories, weightedMode);
@@ -104,6 +142,16 @@ const GradeCalculator = () => {
     <div className="container">
       {" "}
       <h1>Grade Calculator</h1>{" "}
+      <div style={{ padding: "10px 20px", textAlign: "center" }}>
+        <input 
+          type="text" 
+          placeholder="Enter Course Name (e.g., Physics 101)" 
+          value={courseName}
+          onChange={(e) => setCourseName(e.target.value)}
+          style={{ width: "80%", maxWidth: "400px", textAlign: "center", fontWeight: "bold" }}
+        />
+      </div>
+
       <div className="section">
         <div style={{ marginBottom: 12 }}>
           <label style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
@@ -169,6 +217,16 @@ const GradeCalculator = () => {
           onAddAssignment={handleAddAssignment} 
           categories={categories}
         />{" "}
+        <div style={{ margin: "15px 0", textAlign: "center" }}>
+          <button 
+            type="button" 
+            onClick={handleSaveToDatabase}
+            style={{ padding: "10px 20px", fontSize: "16px", backgroundColor: "#1d9bf0", color: "white", borderRadius: "5px", cursor: "pointer", border: "none" }}
+          >
+            Save Dashboard to Database
+          </button>
+        </div>
+
         <AssignmentList
           assignments={assignments}
           onDeleteAssignment={handleDeleteAssignment}
@@ -177,5 +235,6 @@ const GradeCalculator = () => {
       </div>{" "}
     </div>
   );
+
 };
 export default GradeCalculator;
