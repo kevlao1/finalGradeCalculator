@@ -1,43 +1,52 @@
-CREATE TABLE IF NOT EXISTS students (
+DROP TABLE IF EXISTS grades;
+DROP TABLE IF EXISTS categories;
+DROP TABLE IF EXISTS courses;
+DROP TABLE IF EXISTS students;
+
+CREATE TABLE students (
     id SERIAL PRIMARY KEY,
-    username TEXT NOT NULL UNIQUE,
-    name TEXT NOT NULL, 
+    username TEXT UNIQUE,
+    name TEXT NOT NULL,
     email TEXT NOT NULL UNIQUE,
-    password_hash TEXT NOT NULL
+    password_hash TEXT
 );
 
-CREATE TABLE IF NOT EXISTS courses (
+CREATE TABLE courses (
     id SERIAL PRIMARY KEY,
-    course_name TEXT NOT NULL
+    course_name TEXT NOT NULL UNIQUE
 );
 
-CREATE TABLE IF NOT EXISTS categories (
+CREATE TABLE categories (
     id SERIAL PRIMARY KEY,
-    course_id INTEGER REFERENCES courses(id),
+    course_id INTEGER NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
     category_name TEXT NOT NULL,
-    weight NUMERIC NOT NULL
+    weight NUMERIC NOT NULL,
     UNIQUE (course_id, category_name)
 );
 
-CREATE TABLE IF NOT EXISTS grades (
+CREATE TABLE grades (
     id SERIAL PRIMARY KEY,
-    student_id INTEGER REFERENCES students(id),
-    course_id INTEGER REFERENCES courses(id),
-    category INTEGER REFERENCES categories(id),
+    student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+    course_id INTEGER NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    category_id INTEGER REFERENCES categories(id) ON DELETE SET NULL,
     grade_name TEXT NOT NULL,
     score NUMERIC NOT NULL,
     max_score NUMERIC DEFAULT 100,
+    assignment_weight NUMERIC DEFAULT 0
 );
 
+-- Helpful view-like query for checking inserted data
 SELECT
     students.name,
     students.email,
     courses.course_name,
-    grades.category,
+    categories.category_name,
+    categories.weight AS category_weight,
     grades.grade_name,
     grades.score,
     grades.max_score,
+    grades.assignment_weight
 FROM grades
 JOIN students ON grades.student_id = students.id
-JOIN courses ON grades.course_id = courses.id;
-
+JOIN courses ON grades.course_id = courses.id
+LEFT JOIN categories ON grades.category_id = categories.id;
