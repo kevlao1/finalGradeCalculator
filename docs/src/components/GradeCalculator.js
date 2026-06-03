@@ -6,7 +6,7 @@ import AssignmentList from "./AssignmentList";
 const GradeCalculator = () => {
   const [assignments, setAssignments] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [weightedMode, setWeightedMode] = useState(false);
+  const weightedMode = categories.length > 0;
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryWeight, setNewCategoryWeight] = useState("");
   const [studentName, setStudentName] = useState("");
@@ -44,6 +44,14 @@ const GradeCalculator = () => {
     );
     setAssignments(updatedAssignments);
   };
+
+  const handleUpdateAssignment = (index, updatedAssignment) => {
+    setAssignments(
+      assignments.map((assignment, i) =>
+        i === index ? updatedAssignment : assignment
+      )
+    );
+  };
   
   const excludeEmptyCategories = true; // make this a state/toggle later if you want
 
@@ -71,7 +79,7 @@ const GradeCalculator = () => {
     });
 
     const categoryWeights = {};
-    if (weightedMode && categories.length > 0) {
+  if (weightedMode) {
       categories.forEach((c) => {
         categoryWeights[c.name] = Number(c.weight) || 0;
       });
@@ -216,6 +224,9 @@ const GradeCalculator = () => {
       setBackendLoading(false);
     }
   };
+  const detailedResult = computeGradeDetailed(assignments, categories, weightedMode);
+  const breakdown = detailedResult.breakdown || [];
+
   return (
     <div className="container">
       {" "}
@@ -253,29 +264,20 @@ const GradeCalculator = () => {
           </small>
         </div>
         <div style={{ marginBottom: 12 }}>
-          <label style={{ display: "inline-flex", alignItems: "center", gap: 8 }}>
-            <input
-              type="checkbox"
-              checked={weightedMode}
-              onChange={(e) => setWeightedMode(e.target.checked)}
-            />
-            Weighted mode
-          </label>
-
-          <div style={{ marginTop: 8 }}>
+          <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center" }}>
             <input
               type="text"
               placeholder="Category name"
               value={newCategoryName}
               onChange={(e) => setNewCategoryName(e.target.value)}
-              style={{ marginRight: 8 }}
+              style={{ flex: 1, minWidth: 180, width: "auto" }}
             />
             <input
               type="number"
               placeholder="Weight (%)"
               value={newCategoryWeight}
               onChange={(e) => setNewCategoryWeight(e.target.value)}
-              style={{ width: 110, marginRight: 8 }}
+              style={{ width: 130 }}
             />
             <button
               type="button"
@@ -319,12 +321,50 @@ const GradeCalculator = () => {
         <AssignmentList
           assignments={assignments}
           onDeleteAssignment={handleDeleteAssignment}
+          onUpdateAssignment={handleUpdateAssignment}
+          categories={categories}
           calculateGrade={calculateGrade}
           backendGrade={backendGrade}
           backendLoading={backendLoading}
           backendError={backendError}
           onCalculateBackend={calculateGradeBackend}
         />{" "}
+        <div className="section" style={{ marginTop: 16 }}>
+          <h2>Category breakdown</h2>
+
+          {breakdown.length === 0 ? (
+            <p>No category data yet.</p>
+          ) : (
+            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+              <thead>
+                <tr>
+                  <th style={{ textAlign: "left", paddingBottom: 8 }}>Category</th>
+                  <th style={{ textAlign: "right", paddingBottom: 8 }}>Percent</th>
+                  <th style={{ textAlign: "right", paddingBottom: 8 }}>Weight</th>
+                  <th style={{ textAlign: "right", paddingBottom: 8 }}>Contribution</th>
+                </tr>
+              </thead>
+              <tbody>
+                {breakdown.map((row) => (
+                  <tr key={row.name}>
+                    <td style={{ padding: "6px 0" }}>{row.name}</td>
+                    <td style={{ textAlign: "right" }}>{row.percent.toFixed(2)}%</td>
+                    <td style={{ textAlign: "right" }}>{row.weight.toFixed(2)}%</td>
+                    <td style={{ textAlign: "right" }}>{row.contribution.toFixed(2)}</td>
+                  </tr>
+                ))}
+                <tr style={{ borderTop: "1px solid #ddd" }}>
+                  <td style={{ paddingTop: 8 }}><strong>Total</strong></td>
+                  <td />
+                  <td />
+                  <td style={{ textAlign: "right", paddingTop: 8 }}>
+                    <strong>{Number(detailedResult.final || 0).toFixed(2)}</strong>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          )}
+        </div>
       </div>{" "}
     </div>
   );
