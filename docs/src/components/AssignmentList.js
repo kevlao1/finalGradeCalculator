@@ -4,6 +4,10 @@ const AssignmentList = ({
   assignments,
   onDeleteAssignment,
   calculateGrade,
+  backendGrade,
+  backendLoading,
+  backendError,
+  onCalculateBackend,
 }) => {
   return (
     <div className="section2">
@@ -35,7 +39,26 @@ const AssignmentList = ({
         ))}
       </div>
       <div>
-        <h3>Grade: {calculateGrade().toFixed(2)}</h3>
+        <h3>Frontend grade: {calculateGrade().toFixed(2)}</h3>
+        <div style={{ marginTop: 8 }}>
+          <button
+            type="button"
+            onClick={onCalculateBackend}
+            disabled={backendLoading}
+          >
+            {backendLoading ? "Calculating…" : "Calculate with backend"}
+          </button>
+        </div>
+        {backendError && (
+          <div role="alert" style={{ color: "red", marginTop: 8 }}>
+            {backendError}
+          </div>
+        )}
+        {backendGrade !== null && backendGrade !== undefined && !backendError && (
+          <div style={{ marginTop: 8 }}>
+            <strong>Backend grade: {Number(backendGrade).toFixed(2)}</strong>
+          </div>
+        )}
       </div>
     </div>
   );
