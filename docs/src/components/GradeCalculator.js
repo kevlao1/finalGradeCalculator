@@ -52,6 +52,15 @@ const GradeCalculator = () => {
       )
     );
   };
+
+  const handleRemoveCategory = (categoryName, index) => {
+    setCategories(categories.filter((_, idx) => idx !== index));
+    setAssignments(
+      assignments.filter(
+        (assignment) => (assignment.category || "No category") !== categoryName
+      )
+    );
+  };
   
   const excludeEmptyCategories = true; // make this a state/toggle later if you want
 
@@ -232,6 +241,7 @@ const GradeCalculator = () => {
       {" "}
       <h1>Grade Calculator</h1>{" "}
       <div className="section">
+        <h2>Student info</h2>
         <div style={{ marginBottom: 12 }}>
           <div style={{ display: "grid", gap: 8, maxWidth: 420 }}>
             <label>
@@ -264,6 +274,7 @@ const GradeCalculator = () => {
           </small>
         </div>
         <div style={{ marginBottom: 12 }}>
+          <h2>Categories</h2>
           <div style={{ marginTop: 8, display: "flex", gap: 8, alignItems: "center" }}>
             <input
               type="text"
@@ -303,7 +314,7 @@ const GradeCalculator = () => {
                     <button
                       style={{ marginLeft: 8 }}
                       type="button"
-                      onClick={() => setCategories(categories.filter((_, idx) => idx !== i))}
+                      onClick={() => handleRemoveCategory(c.name, i)}
                     >
                       Remove
                     </button>
