@@ -308,14 +308,6 @@ const GradeCalculator = () => {
                 onChange={(e) => setEmail(e.target.value)}
               />
             </label>
-            <label>
-              Course name
-              <input
-                type="text"
-                value={courseName}
-                onChange={(e) => setCourseName(e.target.value)}
-              />
-            </label>
           </div>
           <small style={{ color: "#666" }}>
             These fields are required to send grades to the backend.
