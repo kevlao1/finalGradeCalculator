@@ -11,7 +11,6 @@ from pydantic import BaseModel
 
 from .Calculator import StatsTools
 
-
 app = FastAPI()
 
 # Allow React frontend to call FastAPI backend
@@ -26,10 +25,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-
-# -----------------------------
-# Database connection
-# -----------------------------
 def get_connection():
     return psycopg2.connect(
         dbname="finalgrade",
@@ -39,10 +34,6 @@ def get_connection():
         port="5432",
     )
 
-
-# -----------------------------
-# Login / password helpers
-# -----------------------------
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 SECRET_KEY = "change-this-secret-key-later"
@@ -73,10 +64,6 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
-
-# -----------------------------
-# Pydantic models
-# -----------------------------
 class GradeItem(BaseModel):
     grade_name: str
     score: float
@@ -109,9 +96,6 @@ class LoginRequest(BaseModel):
     password: str
 
 
-# -----------------------------
-# Basic test route
-# -----------------------------
 @app.get("/")
 def root():
     return {"message": "Final Grade Calculator backend is running"}
@@ -165,10 +149,6 @@ def register_user(data: RegisterRequest):
         cur.close()
         conn.close()
 
-
-# -----------------------------
-# Login route
-# -----------------------------
 @app.post("/login")
 def login_user(data: LoginRequest):
     conn = get_connection()
@@ -218,10 +198,6 @@ def login_user(data: LoginRequest):
         cur.close()
         conn.close()
 
-
-# -----------------------------
-# Upload grades route
-# -----------------------------
 @app.post("/upload_grades")
 def upload_grades(data: UploadRequest):
     conn = get_connection()
@@ -319,10 +295,6 @@ def upload_grades(data: UploadRequest):
         cur.close()
         conn.close()
 
-
-# -----------------------------
-# Calculate final grade route
-# -----------------------------
 @app.get("/calculate_grade/{student_id}/{course_id}")
 def get_final_grade(student_id: int, course_id: int):
     conn = get_connection()
@@ -402,10 +374,6 @@ def get_final_grade(student_id: int, course_id: int):
         cur.close()
         conn.close()
 
-
-# -----------------------------
-# Stats route using Calculator.py
-# -----------------------------
 @app.get("/stats/{course_id}/{grade_name}")
 def get_grade_stats(course_id: int, grade_name: str):
     conn = get_connection()
@@ -447,10 +415,6 @@ def get_grade_stats(course_id: int, grade_name: str):
         cur.close()
         conn.close()
 
-
-# -----------------------------
-# Get all grades for debugging
-# -----------------------------
 @app.get("/grades")
 def get_all_grades():
     conn = get_connection()
