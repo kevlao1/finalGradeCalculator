@@ -1,11 +1,15 @@
 Hi! This is for the UCLA CS35L Final Project. Below will be guides and notes before running this repository.
 
-## To-do list (as of 5/28 10:58 PM):
-- Rewrite app.py and grade.sql for categories, adapt student_grade.py to use SQL calculations rather than Python
+## To-do list (as of 6/2 11:40 PM):
 - Combine back and front ends to work
+- Correctly implement redirect from login screen to calculator
+- Reconsider review system?
 - Modification for proper weighting and categories
 - Addition of online functionalities/account system
 - Movement to a server database (non-local)
+- Implement grade distribution calculations
+- Prepare the pytest for the SQL database
+- Prepare for the presentation
 
 # Website notes
 ## Read before doing *any* frontend/UI development.
@@ -30,11 +34,5 @@ Hi! This is for the UCLA CS35L Final Project. Below will be guides and notes bef
 2. Install the module in your virtual environment
 3. Run "pip freeze > requirements.txt", this will capture all of the modules in the virtual environment into the requirements.txt file. Note that this will *overwrite* the file, so make sure you have all the necessary modules before overwriting it
 4. Push and commit requirements.txt (and your modified code if it is ready) both locally *and* to GitHub.
-
-# To-do list and plan (6/1)
-1. Rewrite grade.sql and app.py 
-2. Reconsider the design pattern and deal with the relationship between personal_grade, overall_grade 
-and database
-3. Prepare the pytest for the SQL database
 
 (More guides/notes may be added based on necessity.)
