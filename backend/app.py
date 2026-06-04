@@ -7,7 +7,7 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from .Calculator import StatsTools
 
@@ -64,6 +64,22 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
+oauth2 = OAuth2PasswordBearer(tokenUrl="login")
+
+def get_user_id(token: str = Depends(oauth2)):
+    """Decodes JWT, returns the user's ID."""
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        user_id: str = payload.get("sub")
+        if user_id is None:
+            raise HTTPException(status_code=401, detail="Invalid authentication token credentials")
+        return int(user_id)
+    except jwt.ExpiredSignatureError:
+        raise HTTPException(status_code=401, detail="Access token has expired, please log in again.")
+    except jwt.PyJWTError:
+        raise HTTPException(status_code=401, detail="Could not validate token credentials")
+
+
 class GradeItem(BaseModel):
     grade_name: str
     score: float
@@ -78,8 +94,6 @@ class GradeCategory(BaseModel):
 
 
 class UploadRequest(BaseModel):
-    student_name: str
-    email: str
     course_name: str
     grades: list[GradeCategory]
 
@@ -88,7 +102,7 @@ class RegisterRequest(BaseModel):
     username: str
     name: str
     email: str
-    password: str
+    password: str = Field(..., max_length=72)
 
 
 class LoginRequest(BaseModel):
@@ -139,11 +153,11 @@ def register_user(data: RegisterRequest):
 
     except HTTPException:
         conn.rollback()
-        raise
+        raise HTTPException(status_code=500, detail=str(e))
 
     except Exception as e:
         conn.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        return{"error": str(e)}
 
     finally:
         cur.close()
@@ -193,6 +207,10 @@ def login_user(data: LoginRequest):
             "student_id": student_id,
             "username": username,
         }
+    
+    except Exception as e:
+        conn.rollback()
+        return{"error": str(e)}
 
     finally:
         cur.close()
