@@ -25,6 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Database connection helper
 def get_connection():
     return psycopg2.connect(
         dbname="finalgrade",
@@ -42,16 +43,15 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-
+# Authentication helper functions
 def get_password_hash(password: str):
     """Convert plaintext password to hashed password."""
     return pwd_context.hash(password)
 
-
+# Compare plaintext password with hashed password
 def compare_password(plain_pass: str, hash_pass: str):
     """Compare plaintext password with hashed password."""
     return pwd_context.verify(plain_pass, hash_pass)
-
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
@@ -86,8 +86,8 @@ class UploadRequest(BaseModel):
 
 class RegisterRequest(BaseModel):
     username: str
-    name: str
-    email: str
+    # name: str
+    # email: str
     password: str
 
 
@@ -101,9 +101,7 @@ def root():
     return {"message": "Final Grade Calculator backend is running"}
 
 
-# -----------------------------
-# Register route
-# -----------------------------
+# User registration endpoint - signup with username and password
 @app.post("/register")
 def register_user(data: RegisterRequest):
     conn = get_connection()
@@ -111,15 +109,15 @@ def register_user(data: RegisterRequest):
 
     try:
         hashed_password = get_password_hash(data.password)
-
+        # 
         cur.execute(
             """
-            INSERT INTO students (username, name, email, password_hash)
-            VALUES (%s, %s, %s, %s)
+            INSERT INTO students (username, password_hash)
+            VALUES (%s, %s)
             ON CONFLICT DO NOTHING
             RETURNING id;
             """,
-            (data.username, data.name, data.email, hashed_password),
+            (data.username, hashed_password),
         )
 
         created_user = cur.fetchone()

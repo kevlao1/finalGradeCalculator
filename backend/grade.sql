@@ -4,10 +4,10 @@ DROP TABLE IF EXISTS courses;
 DROP TABLE IF EXISTS students;
 
 CREATE TABLE students (
-    id SERIAL PRIMARY KEY,
+    id SERIAL PRIMARY KEY,          -- Auto-incrementing primary key
     username TEXT UNIQUE,
-    name TEXT NOT NULL,
-    email TEXT NOT NULL UNIQUE,
+    -- name TEXT NOT NULL,
+    -- email TEXT NOT NULL UNIQUE,
     password_hash TEXT
 );
 
@@ -37,8 +37,8 @@ CREATE TABLE grades (
 
 -- Helpful view-like query for checking inserted data
 SELECT
-    students.name,
-    students.email,
+    students.username,
+    -- students.email,
     courses.course_name,
     categories.category_name,
     categories.weight AS category_weight,
