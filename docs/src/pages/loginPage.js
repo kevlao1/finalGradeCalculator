@@ -31,7 +31,7 @@ function Login() {
 
   // Handling login
   const validLogin = () => {
-    if (setError !== "") {
+    if (error !== "") {
       setSuccess("");
     }
 
@@ -66,8 +66,8 @@ function Login() {
   };
 
   // Handle signing up
-  const validSignup = () => {
-    if (setSignupError !== "") {
+  const validSignup = async () => {
+    if (signupError !== "") {
       setSignupSuccess("");
     }
 
@@ -98,6 +98,32 @@ function Login() {
       setSignupError("Passwords do not match. Try again.");
       setSignupPassword("");
       setConfirmPassword("");
+      return;
+    }
+
+    // Send POST request to backend to create new user account and write to database
+    try {
+      const response = await fetch("http://localhost:8000/register", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: signupUsername,
+          password: signupPassword,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setSignupSuccess("");
+        setSignupError(data.detail || "An error occurred while creating the account.");
+        return;
+      }
+    } catch (error) { 
+      setSignupSuccess("");
+      setSignupError("An error occurred while creating the account. Please try again.");
       return;
     }
 
