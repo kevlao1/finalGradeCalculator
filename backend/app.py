@@ -7,11 +7,9 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
-
-from pydantic import BaseModel
 from jwt import PyJWTError
 from pydantic import BaseModel, Field
-
+import bcrypt
 from .Calculator import StatsTools
 
 app = FastAPI()
@@ -46,15 +44,14 @@ ACCESS_TOKEN_EXPIRE_MINUTES = 60
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="login")
 
-# Authentication helper functions
+# Authentication helper functions:
 def get_password_hash(password: str):
-    """Convert plaintext password to hashed password."""
-    return pwd_context.hash(password)
+    # Convert string to bytes, then hash
+    pwd_bytes = password.encode('utf-8')
+    return bcrypt.hashpw(pwd_bytes, bcrypt.gensalt()).decode('utf-8')
 
-# Compare plaintext password with hashed password
 def compare_password(plain_pass: str, hash_pass: str):
-    """Compare plaintext password with hashed password."""
-    return pwd_context.verify(plain_pass, hash_pass)
+    return bcrypt.checkpw(plain_pass.encode('utf-8'), hash_pass.encode('utf-8'))
 
 def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
     to_encode = data.copy()
@@ -191,6 +188,12 @@ def login_user(data: LoginRequest):
             )
 
         student_id, username, password_hash = user
+        
+        print(f"DEBUG: Attempting password check for user: {data.username}")
+        print(f"DEBUG: Stored hash: {password_hash}")
+        # Add this:
+        is_match = compare_password(data.password, password_hash)
+        print(f"DEBUG: Does password match? {is_match}")
 
         if not password_hash or not compare_password(data.password, password_hash):
             raise HTTPException(
