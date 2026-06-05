@@ -307,6 +307,37 @@ const GradeCalculator = () => {
     setSuccess("Course deleted.");
   };
 
+  const loadFromDatabase = async (token) => {
+  try {
+    const response = await fetch(`${API_BASE}/my_grades`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setError("Failed to load saved grades.");
+      return;
+    }
+
+    if (data.courses && Object.keys(data.courses).length > 0) {
+      setSavedCourses(data.courses);
+      setSuccess("Grades loaded from database!");
+    }
+  } catch (err) {
+    setError("Could not connect to server.");
+  }
+};
+
+useEffect(() => {
+  const token = localStorage.getItem("access_token");
+  if (token) {
+    loadFromDatabase(token);
+  }
+}, []);
+
   return (
     <>
       <div className="user-header">
