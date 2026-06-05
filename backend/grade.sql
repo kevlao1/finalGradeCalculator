@@ -6,6 +6,7 @@ DROP TABLE IF EXISTS students;
 CREATE TABLE students (
     id SERIAL PRIMARY KEY,          -- Auto-incrementing primary key
     username TEXT UNIQUE,
+    gpa NUMERIC DEFAULT 0,
     -- name TEXT NOT NULL,
     -- email TEXT NOT NULL UNIQUE,
     password_hash TEXT
