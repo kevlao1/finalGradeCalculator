@@ -21,6 +21,8 @@ const GradeCalculator = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  const [courseKey, setCourseKey] = useState(null);
+
   const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000";
 
   const handleAddAssignment = (newAssignment) => {
@@ -335,10 +337,21 @@ const GradeCalculator = () => {
       categories,
     };
 
-    setSavedCourses((prev) => ({
-      ...prev,
-      [courseName]: courseData,
-    }));
+    setSavedCourses((prev) => {
+      const updated = { ...prev };
+
+      if (courseKey && courseKey !== courseName) {
+        delete updated[courseKey];
+      }
+
+      updated[courseName] = courseData;
+
+      return updated;
+    });
+
+    setCourseName("");
+    setAssignments([]);
+    setCategories([]);
 
     setSuccess(`Saved ${courseName}!`);
   };
@@ -367,6 +380,8 @@ const GradeCalculator = () => {
     setCategories(course.categories);
 
     setSelectedCourse(courseNameToLoad);
+
+    setCourseKey(courseNameToLoad);
   };
 
   // Creating courses
