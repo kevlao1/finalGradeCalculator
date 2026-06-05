@@ -7,15 +7,23 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
+from fastapi.staticfiles import StaticFiles
 
 from pydantic import BaseModel
 from jwt import PyJWTError
 from pydantic import BaseModel, Field
 
 from .Calculator import StatsTools
+from .visualization import GradeVisualizer
+
+from fastapi.staticfiles import StaticFiles
+
+
+
 
 app = FastAPI()
 
+app.mount("/static", StaticFiles(directory="static"), name="static")
 # Allow React frontend to call FastAPI backend
 app.add_middleware(
     CORSMiddleware,
@@ -78,7 +86,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> str:
             )
         return username
 
-    except JWTError:
+    except PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",
@@ -107,6 +115,7 @@ class UploadRequest(BaseModel):
 
 class RegisterRequest(BaseModel):
     username: str
+    gpa: float = 0
     password: str = Field(..., max_length=72)
 
 
@@ -129,12 +138,12 @@ def register_user(data: RegisterRequest):
         # 
         cur.execute(
             """
-            INSERT INTO students (username, password_hash)
-            VALUES (%s, %s)
+            INSERT INTO students (username, gpa, password_hash)
+            VALUES (%s, %s, %s)
             ON CONFLICT DO NOTHING
             RETURNING id;
             """,
-            (data.username, hashed_password),
+            (data.username, data.gpa, hashed_password),
         )
 
         created_user = cur.fetchone()
@@ -147,8 +156,12 @@ def register_user(data: RegisterRequest):
 
         conn.commit()
 
+        token = create_access_token(data={"sub": data.username})
+    
         return {
             "message": "Account successfully created!",
+            "username": data.username,
+            "access_token": token,
             "student_id": created_user[0],
         }
 
@@ -174,7 +187,7 @@ def login_user(data: LoginRequest):
             """
             SELECT id, username, password_hash
             FROM students
-            WHERE username = %s;
+            WHERE LOWER(username) = LOWER(%s);
             """,
             (data.username,),
         )
@@ -497,8 +510,7 @@ def get_all_grades():
             """
             SELECT
                 s.id AS student_id,
-                s.name,
-                s.email,
+                s.gpa,
                 c.id AS course_id,
                 c.course_name,
                 cat.category_name,
@@ -521,8 +533,8 @@ def get_all_grades():
             "grades": [
                 {
                     "student_id": row[0],
-                    "student_name": row[1],
-                    "email": row[2],
+                    "username": row[1],
+                    "gpa": float(row[2]) if row[2] is not None else None,
                     "course_id": row[3],
                     "course_name": row[4],
                     "category_name": row[5],
@@ -604,6 +616,112 @@ def get_my_grades(username: str = Depends(get_current_user)):
             })
 
         return {"courses": courses}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        cur.close()
+        conn.close()
+
+
+@app.get("/course_grade_report")
+def get_course_grade_report(course_name: str):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT
+                c.course_name,
+                s.username,
+                s.gpa,
+                g.grade_name,
+                g.score,
+                g.max_score
+            FROM grades g
+            JOIN students s ON g.student_id = s.id
+            JOIN courses c ON g.course_id = c.id
+            WHERE c.course_name = %s
+            ORDER BY s.username, g.grade_name;
+            """,
+            (course_name,),
+        )
+
+        rows = cur.fetchall()
+
+        if not rows:
+            return {
+                "courseName": course_name,
+                "students": [],
+                "statistics": {},
+                "plotPath": None,
+                "message": "No grades found for this course."
+            }
+
+        students = {}
+
+        for row in rows:
+            course_name, username, gpa, grade_name, score, max_score = row
+
+            score = float(score)
+            max_score = float(max_score)
+
+            percentage_score = score / max_score * 100 if max_score != 0 else 0
+
+            if username not in students:
+                students[username] = {
+                    "name": username,
+                    "gpa": float(gpa) if gpa is not None else None,
+                    "assignments": [],
+                    "totalScore": 0,
+                    "totalMaxScore": 0,
+                }
+
+            students[username]["assignments"].append({
+                "gradeName": grade_name,
+                "score": score,
+                "maxScore": max_score,
+                "percentage": percentage_score,
+            })
+
+            students[username]["totalScore"] += score
+            students[username]["totalMaxScore"] += max_score
+
+        student_scores = []
+
+        for username, student_data in students.items():
+            total_score = student_data["totalScore"]
+            total_max_score = student_data["totalMaxScore"]
+
+            final_score = total_score / total_max_score * 100 if total_max_score != 0 else 0
+
+            student_scores.append({
+                "name": username,
+                "gpa": student_data["gpa"],
+                "score": final_score,
+                "assignments": student_data["assignments"],
+            })
+
+        score_list = [student["score"] for student in student_scores]
+
+        plot_path = GradeVisualizer.plot_scores(course_name, student_scores)
+
+        return {
+            "courseName": course_name,
+            "students": student_scores,
+            "statistics": {
+                "average": StatsTools.average(score_list),
+                "minimum": StatsTools.minimum(score_list),
+                "maximum": StatsTools.maximum(score_list),
+                "lowerQuarter": StatsTools.lower_quarter(score_list),
+                "upperQuarter": StatsTools.upper_quarter(score_list),
+                "median": StatsTools.median(score_list),
+                "studentCount": len(score_list),
+            },
+            "plotPath": plot_path,
+        }
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
