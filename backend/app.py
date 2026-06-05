@@ -125,7 +125,7 @@ def register_user(data: RegisterRequest):
         if not created_user:
             raise HTTPException(
                 status_code=400,
-                detail="Username or email already taken!",
+                detail="Username already taken!",
             )
 
         conn.commit()

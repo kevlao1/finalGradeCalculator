@@ -16,7 +16,7 @@ function Login() {
   const [signupError, setSignupError] = useState("");
   const [signupSuccess, setSignupSuccess] = useState("");
 
-  const [account, setAccount] = useState([]);
+  // const [account, setAccount] = useState([]);
   const [shownUser, setShownUser] = useState(null);
 
   const validatePassword = (password) => {
@@ -116,6 +116,7 @@ function Login() {
       return;
     }
 
+    /*
     const usernameTaken = account.some(
       (account) => account.username === signupUsername
     );
@@ -123,7 +124,7 @@ function Login() {
     if (usernameTaken) {
       setSignupError("This username is already taken.");
       return;
-    }
+    } */
 
     if (!validatePassword(signupPassword)) {
       setSignupError(
