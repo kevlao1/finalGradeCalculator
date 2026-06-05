@@ -153,6 +153,7 @@ const GradeCalculator = () => {
     const payload = {
       course_name: courseName,
       username: localStorage.getItem("username"),
+      final_grade: calculateGrade(),
       grades: categories.map((cat) => ({
         category_name: cat.name,
         weight: cat.weight,
@@ -269,6 +270,7 @@ const GradeCalculator = () => {
     setSavedCourses((prev) => ({
     ...prev,
   }));
+    setClassAverage(null);
   };
 
   // Creating courses
@@ -281,6 +283,7 @@ const GradeCalculator = () => {
   
     setSuccess("");
     setError("");
+    setClassAverage(null);
   };
 
   const handleDeleteCourse = () => {
@@ -360,6 +363,23 @@ useEffect(() => {
       },
     }));
   }, [assignments, categories, courseName, selectedCourse]);
+
+  const [classAverage, setClassAverage] = useState(null);
+
+const fetchClassAverage = async () => {
+  if (!courseName.trim()) return;
+  const token = localStorage.getItem("access_token");
+  try {
+    const response = await fetch(
+      `${API_BASE}/class_average/${encodeURIComponent(courseName)}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    const data = await response.json();
+    if (response.ok) setClassAverage(data);
+  } catch (err) {
+    console.error("Could not fetch class average");
+  }
+};
 
   return (
     <>
@@ -625,8 +645,22 @@ useEffect(() => {
                 </tbody>
               </table>
             )}
-          </div>
-        </div>{" "}
+
+            {/* Class average section */}
+            <div style={{ marginTop: 16 }}>
+              <button type="button" onClick={fetchClassAverage}>
+                Show Class Average
+              </button>
+              {classAverage && (
+                <p>
+                  Class average for <strong>{classAverage.course_name}</strong>:{" "}
+                  <strong>{classAverage.class_average}%</strong>{" "}
+                  <span style={{ color: "#666" }}>({classAverage.num_students} students)</span>
+                </p>
+              )}
+            </div>
+          </div>  {/* closes className="section" */}
+        </div>{" "}  {/* closes className="container" */}
       </div>
         <GPACalculator
           savedCourses={savedCourses}

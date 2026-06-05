@@ -105,9 +105,8 @@ class GradeCategory(BaseModel):
 
 class UploadRequest(BaseModel):
     username: str
-    # email: str
-
     course_name: str
+    final_grade: float
     grades: list[GradeCategory]
 
 
@@ -279,6 +278,15 @@ def upload_grades(data: UploadRequest, username: str = Depends(get_current_user)
             (student_id, course_id),
         )
 
+        cur.execute(
+            """
+            INSERT INTO course_grades (student_id, course_id, final_grade)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (student_id, course_id)
+            DO UPDATE SET final_grade = EXCLUDED.final_grade;
+            """,
+            (student_id, course_id, data.final_grade),
+        )
         num_grades = 0
 
         # 3. Insert categories and grades.
@@ -342,6 +350,35 @@ def upload_grades(data: UploadRequest, username: str = Depends(get_current_user)
         conn.rollback()
         raise HTTPException(status_code=500, detail=str(e))
 
+    finally:
+        cur.close()
+        conn.close()
+
+@app.get("/class_average/{course_name}")
+def get_class_average(course_name: str, username: str = Depends(get_current_user)):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT AVG(f.final_grade), COUNT(*)
+            FROM course_grades f
+            JOIN courses c ON f.course_id = c.id
+            WHERE c.course_name = %s
+            """,
+            (course_name,)
+        )
+        row = cur.fetchone()
+        if not row or row[0] is None:
+            return {"message": "No grades found for this course"}
+        return {
+            "course_name": course_name,
+            "class_average": round(float(row[0]), 2),
+            "num_students": row[1]
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
     finally:
         cur.close()
         conn.close()
