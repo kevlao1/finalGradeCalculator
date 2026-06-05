@@ -311,6 +311,8 @@ const GradeCalculator = () => {
     setSavedCourses(updatedCourses);
 
     setCourseName("");
+    setSelectedCourse("");
+    setCourseKey(null);
     setAssignments([]);
     setCategories([]);
 
@@ -421,7 +423,7 @@ useEffect(() => {
             type="text"
             placeholder="Enter Course Name (e.g., Physics 101)"
             value={courseName}
-            onChange={(e) => setCourseName(e.target.value)}
+            onChange={(e) => setCourseName(e.target.value.toUpperCase())}
             style={{
               width: "80%",
               maxWidth: "400px",
