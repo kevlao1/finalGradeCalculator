@@ -7,8 +7,10 @@ from fastapi import Depends, FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
+
 from pydantic import BaseModel
 from jwt import PyJWTError
+from pydantic import BaseModel, Field
 
 from .Calculator import StatsTools
 
@@ -19,7 +21,7 @@ app.add_middleware(
     CORSMiddleware,
     allow_origins=[
         "http://localhost:3000",
-        "http://localhost:5173",
+        "https://kevlao1.github.io",
     ],
     allow_credentials=True,
     allow_methods=["*"],
@@ -82,6 +84,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> str:
             detail="Invalid token",
         )
 
+
 class GradeItem(BaseModel):
     grade_name: str
     score: float
@@ -98,6 +101,7 @@ class GradeCategory(BaseModel):
 class UploadRequest(BaseModel):
     username: str
     # email: str
+
     course_name: str
     grades: list[GradeCategory]
 
@@ -106,18 +110,16 @@ class RegisterRequest(BaseModel):
     username: str
     # name: str
     # email: str
-    password: str
+    password: str = Field(..., max_length=72)
 
 
 class LoginRequest(BaseModel):
     username: str
     password: str
 
-
 @app.get("/")
 def root():
     return {"message": "Final Grade Calculator backend is running"}
-
 
 # User registration endpoint - signup with username and password
 @app.post("/register")
@@ -155,11 +157,11 @@ def register_user(data: RegisterRequest):
 
     except HTTPException:
         conn.rollback()
-        raise
+        raise HTTPException(status_code=500, detail=str(e))
 
     except Exception as e:
         conn.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        return{"error": str(e)}
 
     finally:
         cur.close()
@@ -210,6 +212,10 @@ def login_user(data: LoginRequest):
             #"student_id": student_id,
             "username": username,
         }
+    
+    except Exception as e:
+        conn.rollback()
+        return{"error": str(e)}
 
     finally:
         cur.close()

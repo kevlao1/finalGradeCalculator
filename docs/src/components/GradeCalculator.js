@@ -9,8 +9,6 @@ const GradeCalculator = () => {
   const weightedMode = categories.length > 0;
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryWeight, setNewCategoryWeight] = useState("");
-  const [studentName, setStudentName] = useState("");
-  const [email, setEmail] = useState("");
   const [courseName, setCourseName] = useState("");
   const [backendGrade, setBackendGrade] = useState(null);
   const [backendError, setBackendError] = useState("");
@@ -94,13 +92,8 @@ const GradeCalculator = () => {
       return { error: "Add at least one assignment before calculating." };
     }
 
-    const trimmedStudent = studentName.trim();
-    const trimmedEmail = email.trim();
     const trimmedCourse = courseName.trim();
 
-    if (!trimmedStudent || !trimmedEmail || !trimmedCourse) {
-      return { error: "Student name, email, and course name are required." };
-    }
 
     const totalsByCategory = {};
     assignments.forEach((assignment) => {
@@ -143,8 +136,6 @@ const GradeCalculator = () => {
     }));
 
     return {
-      student_name: trimmedStudent,
-      email: trimmedEmail,
       course_name: trimmedCourse,
       grades,
     };
@@ -240,8 +231,8 @@ const GradeCalculator = () => {
     console.log("payload:", payload);
     console.log("payload JSON:", JSON.stringify(payload, null, 2));
 
-    try {
-      const response = await fetch("http://127.0.0.1:8000/upload_grades", {
+    try{
+      const response = await fetch(`${API_BASE}/upload_grades`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -340,8 +331,6 @@ const GradeCalculator = () => {
 
     const courseData = {
       courseName,
-      studentName,
-      email,
       assignments,
       categories,
     };
@@ -374,8 +363,6 @@ const GradeCalculator = () => {
     if (!course) return;
 
     setCourseName(course.courseName);
-    setStudentName(course.studentName);
-    setEmail(course.email);
     setAssignments(course.assignments);
     setCategories(course.categories);
 
@@ -385,8 +372,6 @@ const GradeCalculator = () => {
   // Creating courses
   const createNewCourse = () => {
     setCourseName("");
-    setStudentName("");
-    setEmail("");
 
     setAssignments([]);
     setCategories([]);
@@ -413,8 +398,6 @@ const GradeCalculator = () => {
     setSavedCourses(updatedCourses);
 
     setCourseName("");
-    setStudentName("");
-    setEmail("");
     setAssignments([]);
     setCategories([]);
 
@@ -478,30 +461,6 @@ const GradeCalculator = () => {
           />
         </div>
         <div className="section">
-          <h2>Student info</h2>
-          <div style={{ marginBottom: 12 }}>
-            <div style={{ display: "grid", gap: 8, maxWidth: 420 }}>
-              <label>
-                Student Name
-                <input
-                  type="text"
-                  value={studentName}
-                  onChange={(e) => setStudentName(e.target.value)}
-                />
-              </label>
-              <label>
-                Email
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                />
-              </label>
-            </div>
-            <small style={{ color: "#666" }}>
-              These fields are required to send grades to the backend.
-            </small>
-          </div>
           <div style={{ marginBottom: 12 }}>
             <h2>Categories</h2>
             <div
