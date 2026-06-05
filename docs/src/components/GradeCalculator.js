@@ -151,8 +151,8 @@ const GradeCalculator = () => {
 
   const handleSaveToDatabase = async () => {
     const payload = {
+      username: localStorage.getItem("username"),
       course_name: courseName,
-
       grades: categories.map((cat) => ({
         category_name: cat.name,
         weight: cat.weight,
