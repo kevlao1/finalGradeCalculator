@@ -6,10 +6,6 @@ const AssignmentList = ({
   onUpdateAssignment,
   categories,
   calculateGrade,
-  backendGrade,
-  backendLoading,
-  backendError,
-  onCalculateBackend,
 }) => {
   const [editIndex, setEditIndex] = useState(null);
   const [editValues, setEditValues] = useState({
@@ -178,26 +174,7 @@ const AssignmentList = ({
         )}
       </div>
       <div>
-        <h3>Frontend grade: {calculateGrade().toFixed(2)}</h3>
-        <div style={{ marginTop: 8 }}>
-          <button
-            type="button"
-            onClick={onCalculateBackend}
-            disabled={backendLoading}
-          >
-            {backendLoading ? "Calculating…" : "Calculate with backend"}
-          </button>
-        </div>
-        {backendError && (
-          <div role="alert" style={{ color: "red", marginTop: 8 }}>
-            {backendError}
-          </div>
-        )}
-        {backendGrade !== null && backendGrade !== undefined && !backendError && (
-          <div style={{ marginTop: 8 }}>
-            <strong>Backend grade: {Number(backendGrade).toFixed(2)}</strong>
-          </div>
-        )}
+        <h3>Total Grade: {calculateGrade().toFixed(2)}</h3>
       </div>
     </div>
   );

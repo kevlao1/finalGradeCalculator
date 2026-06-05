@@ -2,17 +2,16 @@ import React, { useState, useEffect } from "react";
 import "./GradeCalculator.css";
 import AssignmentForm from "./CreateAssignment.js";
 import AssignmentList from "./AssignmentList";
+import { useNavigate } from "react-router-dom";
 
 const GradeCalculator = () => {
+  const navigate = useNavigate();
   const [assignments, setAssignments] = useState([]);
   const [categories, setCategories] = useState([]);
   const weightedMode = categories.length > 0;
   const [newCategoryName, setNewCategoryName] = useState("");
   const [newCategoryWeight, setNewCategoryWeight] = useState("");
   const [courseName, setCourseName] = useState("");
-  const [backendGrade, setBackendGrade] = useState(null);
-  const [backendError, setBackendError] = useState("");
-  const [backendLoading, setBackendLoading] = useState(false);
 
   const [savedCourses, setSavedCourses] = useState({});
   const [selectedCourse, setSelectedCourse] = useState("");
@@ -29,19 +28,12 @@ const GradeCalculator = () => {
     setAssignments([...assignments, newAssignment]);
   };
 
-  // Error and success messgae handling
-  const errorSuccess = () => {
-    if (setError !== "") {
-      setSuccess("");
-    }
-    if (setSuccess !== "") {
-      setError("");
-    }
-  };
-
   // Logging out
   const logout = () => {
     setShownUser(null);
+    localStorage.removeItem("username");
+    localStorage.removeItem("access_token");
+    navigate("/");
   };
 
   const addCategory = (name, weight) => {
@@ -88,60 +80,6 @@ const GradeCalculator = () => {
   };
 
   const excludeEmptyCategories = true; // make this a state/toggle later if you want
-
-  const buildBackendPayload = () => {
-    if (!assignments || assignments.length === 0) {
-      return { error: "Add at least one assignment before calculating." };
-    }
-
-    const trimmedCourse = courseName.trim();
-
-
-    const totalsByCategory = {};
-    assignments.forEach((assignment) => {
-      const cat = assignment.category || "No category";
-      if (!totalsByCategory[cat]) {
-        totalsByCategory[cat] = { earned: 0, total: 0 };
-      }
-      totalsByCategory[cat].earned += Number(assignment.assignmentScore || 0);
-      totalsByCategory[cat].total += Number(assignment.totalScore || 0);
-    });
-
-    const categoryWeights = {};
-    if (weightedMode) {
-      categories.forEach((c) => {
-        categoryWeights[c.name] = Number(c.weight) || 0;
-      });
-    } else {
-      const overallTotal = Object.values(totalsByCategory).reduce(
-        (sum, stats) => sum + stats.total,
-        0
-      );
-      Object.keys(totalsByCategory).forEach((cat) => {
-        const catTotal = totalsByCategory[cat].total;
-        categoryWeights[cat] =
-          overallTotal > 0 ? (catTotal / overallTotal) * 100 : 0;
-      });
-    }
-
-    const grades = Object.keys(totalsByCategory).map((cat) => ({
-      category_name: cat,
-      weight: categoryWeights[cat] || 0,
-      assignment_list: assignments
-        .filter((assignment) => (assignment.category || "No category") === cat)
-        .map((assignment) => ({
-          grade_name: assignment.assignmentName,
-          score: Number(assignment.assignmentScore || 0),
-          max_score: Number(assignment.totalScore || 0),
-          weight: 0,
-        })),
-    }));
-
-    return {
-      course_name: trimmedCourse,
-      grades,
-    };
-  };
 
   // returns { final: number, breakdown: Array }
   const computeGradeDetailed = (
@@ -223,7 +161,6 @@ const GradeCalculator = () => {
             grade_name: a.assignmentName,
             score: a.assignmentScore,
             max_score: a.totalScore,
-            weight: a.weight
           })),
       })),
     };
@@ -263,53 +200,6 @@ const GradeCalculator = () => {
     return Number(result.final || 0);
   };
 
-  const calculateGradeBackend = async () => {
-    setBackendError("");
-    setBackendGrade(null);
-
-    const payload = buildBackendPayload();
-    if (payload.error) {
-      setBackendError(payload.error);
-      return;
-    }
-
-    setBackendLoading(true);
-
-    try {
-      const uploadResponse = await fetch(`${API_BASE}/upload_grades`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload),
-      });
-
-      const uploadData = await uploadResponse.json();
-      if (!uploadResponse.ok || uploadData.error) {
-        throw new Error(uploadData.error || "Failed to upload grades.");
-      }
-
-      const { student_id: studentId, course_id: courseId } = uploadData;
-      if (!studentId || !courseId) {
-        throw new Error("Backend did not return student/course IDs.");
-      }
-
-      const gradeResponse = await fetch(
-        `${API_BASE}/calculate_grade/${studentId}/${courseId}`
-      );
-      const gradeData = await gradeResponse.json();
-      if (!gradeResponse.ok || gradeData.error) {
-        throw new Error(gradeData.error || "Failed to calculate grade.");
-      }
-      if (gradeData.final_grade_percentage === undefined) {
-        throw new Error(gradeData.message || "No grade returned from backend.");
-      }
-
-      setBackendGrade(Number(gradeData.final_grade_percentage));
-    } catch (error) {
-      setBackendError(error.message || "Unable to calculate backend grade.");
-    } finally {
-      setBackendLoading(false);
-    }
-  };
   const detailedResult = computeGradeDetailed(
     assignments,
     categories,
@@ -391,9 +281,6 @@ const GradeCalculator = () => {
     setCategories([]);
     setCourseKey(null);
   
-    setBackendGrade(null);
-    setBackendError("");
-  
     setSuccess("");
     setError("");
   };
@@ -424,6 +311,39 @@ const GradeCalculator = () => {
 
     setSuccess("Course deleted.");
   };
+
+  const loadFromDatabase = async (token) => {
+  try {
+    const response = await fetch(`${API_BASE}/my_grades`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      setError("Failed to load saved grades.");
+      return;
+    }
+
+    if (data.courses && Object.keys(data.courses).length > 0) {
+      setSavedCourses(data.courses);
+      setSuccess("Grades loaded from database!");
+    }
+  } catch (err) {
+    setError("Could not connect to server.");
+  }
+};
+
+useEffect(() => {
+  const token = localStorage.getItem("access_token");
+  if (token) {
+    loadFromDatabase(token);
+  }
+}, []);
+
+
 
   return (
     <>
@@ -458,12 +378,12 @@ const GradeCalculator = () => {
             </select>
           </div>
           <span>
-            {shownUser
-              ? `Hi, ${shownUser}!  `
+            {localStorage.getItem("username")
+              ? `Hi, ${localStorage.getItem("username")}!  `
               : "Please log in to save your grades!"}
           </span>
 
-          {shownUser && (
+          {localStorage.getItem("access_token") && (
             <button className="logout-button" onClick={logout}>
               Log Out
             </button>
@@ -602,10 +522,6 @@ const GradeCalculator = () => {
             onUpdateAssignment={handleUpdateAssignment}
             categories={categories}
             calculateGrade={calculateGrade}
-            backendGrade={backendGrade}
-            backendLoading={backendLoading}
-            backendError={backendError}
-            onCalculateBackend={calculateGradeBackend}
           />{" "}
           <div className="section" style={{ marginTop: 16 }}>
             <h2>Category breakdown</h2>

@@ -31,6 +31,8 @@ function Login() {
   // Logging out
   const logout = () => {
     setShownUser(null);
+    localStorage.removeItem("username");
+    localStorage.removeItem("access_token");
   };
 
   // Handling login
