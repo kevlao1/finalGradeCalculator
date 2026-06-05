@@ -1,0 +1,51 @@
+.gpa-calculator {
+  width: 500px;
+  background: white;
+  border-radius: 10px;
+  padding: 20px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.15);
+  position: sticky;
+  top: 20px;
+}
+
+.gpa-calculator h2 {
+  text-align: center;
+  margin-bottom: 20px;
+}
+
+.course-card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  background: #fafafa;
+}
+
+.course-card h3 {
+  margin-top: 0;
+}
+
+.course-card input {
+  margin-top: 6px;
+  margin-left: 6px;
+  width: 25%;
+}
+
+.gpa-total {
+  margin-top: 20px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  color: #1d9bf0;
+}
+
+.GPA-layout {
+  display: flex;
+  gap: 20px;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.calculator-container {
+  flex: 1;
+}
