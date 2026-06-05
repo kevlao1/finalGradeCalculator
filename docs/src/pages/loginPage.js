@@ -30,7 +30,7 @@ function Login() {
   };
 
   // Handling login
-  const validLogin = () => {
+  const validLogin = async () => {
     if (error !== "") {
       setSuccess("");
     }
@@ -40,6 +40,10 @@ function Login() {
       return;
     }
 
+    // Do we need to validate password format for login? 
+    // Cause we have checked it when signing up, so if the account exists, the password must be valid.
+    // Decide to annote it for now, but can be added back if needed.
+    /*
     if (!validatePassword(password)) {
       setError(
         "Invalid: Password requires at least one uppercase, lowercase, number, and symbol"
@@ -47,22 +51,53 @@ function Login() {
       setPassword("");
       return;
     }
+    */
 
-    const storedAccount = account.find(
-      (account) =>
-        account.username === username && account.password === password
-    );
+    try {
+      const response = await fetch("http://localhost:8000/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username: username,
+          password: password,
+        }),
+      });
 
-    if (storedAccount) {
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(data.detail || "Log failed. Please check your username and password and try again.");
+        return;
+      }
+
+      localStorage.setItem("username", data.username);
+      localStorage.setItem("access_token", data.access_token);
+
       setError("");
       setSuccess("Login successful!");
-      setShownUser(storedAccount.username);
+      setShownUser(data.username);
       setUsername("");
       setPassword("");
+
+    } catch (error) { 
+      setSuccess("");
+      setError("An error occurred while logging in. Please try again.");
+      return;
+    }
+
+    /* const storedAccount = account.find(
+      (account) =>
+        account.username === username && account.password === password
+    ); */
+
+    /* if (!data.username && !data.password && !data.access_token) {
+      
     } else {
       setError("Account not found. Please sign up or try again.");
       setPassword("");
-    }
+    } */
   };
 
   // Handle signing up
