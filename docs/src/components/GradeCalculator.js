@@ -516,8 +516,6 @@ useEffect(() => {
               Delete Course
             </button>
           </div>
-<<<<<<< HEAD
-=======
           <div 
             style={{
               margin: "15px 0",
@@ -566,7 +564,7 @@ useEffect(() => {
             View Grade Visualization
           </button>
       </div>
->>>>>>> 357670f (Add visualization)
+
           <AssignmentList
             assignments={assignments}
             onDeleteAssignment={handleDeleteAssignment}
