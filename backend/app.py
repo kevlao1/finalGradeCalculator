@@ -157,11 +157,11 @@ def register_user(data: RegisterRequest):
 
     except HTTPException:
         conn.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
+        raise
 
     except Exception as e:
         conn.rollback()
-        return{"error": str(e)}
+        raise HTTPException(status_code=500, detail=str(e))
 
     finally:
         cur.close()
