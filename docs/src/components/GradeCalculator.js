@@ -224,13 +224,9 @@ const GradeCalculator = () => {
           })),
       })),
     };
-<<<<<<< HEAD
+    
     try{
       const response = await fetch(`${API_BASE}/upload_grades`, {
-=======
-    try {
-      const response = await fetch("http://127.0.0.1:8000/upload_grades", {
->>>>>>> b1203cea6e4903d0737b6a0bc4e7b2e02271dbe9
         method: "POST",
         headers: {
           "Content-Type": "application/json",
