@@ -14,7 +14,9 @@ body {
 .container {
   max-width: 800px;
   margin: 12px;
+  padding: 20px;
   width: calc(100% - 24px);
+  border-radius: 10px;
   background-color: #99c3f0;
   background-image: linear-gradient(to top, #b2f4e7 0%, #2ac0ca 100%);
 }
@@ -24,7 +26,8 @@ body {
   margin-bottom: 10px;
   text-align: center;
   font-weight: bold;
-  font-size: 30px;
+  font-size: 40px;
+  color: #0d3653;
 }
 
 .section {
@@ -156,6 +159,14 @@ input {
   text-align: right;
   font-size: 24px;
   font-weight: bold;
+}
+
+.user-header select {
+  padding: 8px;
+  border-radius: 4px;
+  border: none;
+  font-size: 14px;
+  margin: 0px auto;
 }
 
 .save-course {
