@@ -311,6 +311,8 @@ const GradeCalculator = () => {
     setSavedCourses(updatedCourses);
 
     setCourseName("");
+    setSelectedCourse("");
+    setCourseKey(null);
     setAssignments([]);
     setCategories([]);
 
