@@ -220,7 +220,7 @@ const GradeCalculator = () => {
   const handleSaveToDatabase = async () => {
     const payload = {
       course_name: courseName,
-
+      username: localStorage.getItem("username"),
       grades: categories.map((cat) => ({
         category_name: cat.name,
         weight: cat.weight,
@@ -230,9 +230,16 @@ const GradeCalculator = () => {
             grade_name: a.assignmentName,
             score: a.assignmentScore,
             max_score: a.totalScore,
+            weight: a.weight
           })),
       })),
     };
+
+    console.log("categories:", categories);
+    console.log("assignments:", assignments);
+    console.log("payload:", payload);
+    console.log("payload JSON:", JSON.stringify(payload, null, 2));
+
     try {
       const response = await fetch("http://127.0.0.1:8000/upload_grades", {
         method: "POST",
@@ -245,12 +252,15 @@ const GradeCalculator = () => {
       const data = await response.json();
       if (response.ok) {
         alert(data.message || "Grades saved to SQL");
+        return;
       } else {
         alert("Save failed: " + (data.detail || "Unknown error"));
+        return;
       }
     } catch (error) {
       console.error("Network error:", error);
       alert("Could not connect");
+      return;
     }
   };
 

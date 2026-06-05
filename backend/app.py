@@ -8,6 +8,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from pydantic import BaseModel
+from jwt import PyJWTError
 
 from .Calculator import StatsTools
 
@@ -64,10 +65,27 @@ def create_access_token(data: dict, expires_delta: Optional[timedelta] = None):
 
     return jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
 
+def get_current_user(token: str = Depends(oauth2_scheme)) -> str:
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        username: str = payload.get("sub")
+        if username is None:
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Invalid token",
+            )
+        return username
+
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Invalid token",
+        )
+
 class GradeItem(BaseModel):
     grade_name: str
     score: float
-    max_score: float = 100.0
+    max_score: float
     weight: float = 0.0
 
 
@@ -78,8 +96,8 @@ class GradeCategory(BaseModel):
 
 
 class UploadRequest(BaseModel):
-    student_name: str
-    email: str
+    username: str
+    # email: str
     course_name: str
     grades: list[GradeCategory]
 
@@ -198,7 +216,7 @@ def login_user(data: LoginRequest):
         conn.close()
 
 @app.post("/upload_grades")
-def upload_grades(data: UploadRequest):
+def upload_grades(data: UploadRequest, username: str = Depends(get_current_user)):
     conn = get_connection()
     cur = conn.cursor()
 
@@ -207,13 +225,13 @@ def upload_grades(data: UploadRequest):
         # This supports non-login testing, where frontend sends only name/email.
         cur.execute(
             """
-            INSERT INTO students (name, email)
-            VALUES (%s, %s)
-            ON CONFLICT (email)
-            DO UPDATE SET name = EXCLUDED.name
+            INSERT INTO students (username)
+            VALUES (%s)
+            ON CONFLICT (username)
+            DO UPDATE SET username = EXCLUDED.username
             RETURNING id;
             """,
-            (data.student_name, data.email),
+            (username,),
         )
 
         student_id = cur.fetchone()[0]
@@ -231,6 +249,15 @@ def upload_grades(data: UploadRequest):
         )
 
         course_id = cur.fetchone()[0]
+
+        cur.execute(
+            """
+            DELETE FROM grades
+            WHERE student_id = %s
+            AND course_id = %s;
+            """,
+            (student_id, course_id),
+        )
 
         num_grades = 0
 
@@ -285,6 +312,11 @@ def upload_grades(data: UploadRequest):
             "course_id": course_id,
             "number_of_grades": num_grades,
         }
+
+    # Set two different errors
+    except HTTPException:
+        conn.rollback()
+        raise
 
     except Exception as e:
         conn.rollback()
