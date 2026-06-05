@@ -516,6 +516,55 @@ useEffect(() => {
               Delete Course
             </button>
           </div>
+          <div 
+            style={{
+              margin: "15px 0",
+              textAlign: "center",
+              display: "flex",
+              justifyContent: "center",
+              gap: "15px",
+            }}
+          >
+          <button
+            type="button"
+              onClick={handleSaveToDatabase}
+            style={{
+              padding: "10px 20px",
+              fontSize: "16px",
+              backgroundColor: "#1d9bf0",
+              color: "white",
+              borderRadius: "5px",
+              cursor: "pointer",
+              border: "none",
+            }}
+          >
+            Save Dashboard to Database
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              if (!courseName.trim()) {
+                setError("Please enter or select a course name first.");
+                return;
+              }
+
+              navigate(`/course-report?course_name=${encodeURIComponent(courseName)}`);
+            }}
+            style={{
+              padding: "10px 20px",
+              fontSize: "16px",
+              backgroundColor: "#28a745",
+              color: "white",
+              borderRadius: "5px",
+              cursor: "pointer",
+              border: "none",
+            }}
+          >
+            View Grade Visualization
+          </button>
+      </div>
+
           <AssignmentList
             assignments={assignments}
             onDeleteAssignment={handleDeleteAssignment}

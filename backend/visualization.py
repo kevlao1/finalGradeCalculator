@@ -1,30 +1,37 @@
+import os
+import matplotlib
+
+matplotlib.use("Agg")
+
 import matplotlib.pyplot as plt
+
 
 class GradeVisualizer:
     @staticmethod
-    def plot_scores(student_scores):
-        """
-        student_scores: list of dictionaries
-        """
+    def plot_scores(course_name, student_scores):
+        if not student_scores:
+            return None
 
         names = []
         scores = []
 
         for student in student_scores:
-            names.append(student['name'])
-            scores.append(student['score'])
+            names.append(student["name"])
+            scores.append(student["score"])
 
-        plt.bar(names, scores, color='blue')
-        plt.xlabel('Students')
-        plt.ylabel('Final Score')
-        plt.title('Final Scores of Students')
-        plt.savefig("student_scores.png")
+        os.makedirs("static/plots", exist_ok=True)
 
-# Example usage and test case
-student_scores = [
-    {"name": "Alice", "score": 92},
-    {"name": "Bob", "score": 85},
-    {"name": "Cindy", "score": 78}
-]
+        safe_course_name = course_name.replace(" ", "_").replace("/", "_")
+        file_path = f"static/plots/{safe_course_name}_scores.png"
 
-GradeVisualizer.plot_scores(student_scores)
+        plt.figure(figsize=(10, 6))
+        plt.bar(names, scores)
+        plt.xlabel("Students")
+        plt.ylabel("Final Score")
+        plt.title(f"Final Scores - {course_name}")
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.savefig(file_path)
+        plt.close()
+
+        return file_path

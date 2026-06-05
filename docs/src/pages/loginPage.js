@@ -13,12 +13,12 @@ function Login() {
   const [success, setSuccess] = useState("");
 
   const [signupUsername, setSignupUsername] = useState("");
+  const [signupGpa, setSignupGpa] = useState("");
   const [signupPassword, setSignupPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [signupError, setSignupError] = useState("");
   const [signupSuccess, setSignupSuccess] = useState("");
 
-  // const [account, setAccount] = useState([]);
   const [shownUser, setShownUser] = useState(null);
 
   const validatePassword = (password) => {
@@ -28,14 +28,12 @@ function Login() {
     return passwordRegex.test(password);
   };
 
-  // Logging out
   const logout = () => {
     setShownUser(null);
     localStorage.removeItem("username");
     localStorage.removeItem("access_token");
   };
 
-  // Handling login
   const validLogin = async () => {
     if (error !== "") {
       setSuccess("");
@@ -45,19 +43,6 @@ function Login() {
       setError("Login username or password cannot be left blank.");
       return;
     }
-
-    // Do we need to validate password format for login? 
-    // Cause we have checked it when signing up, so if the account exists, the password must be valid.
-    // Decide to annote it for now, but can be added back if needed.
-    /*
-    if (!validatePassword(password)) {
-      setError(
-        "Invalid: Password requires at least one uppercase, lowercase, number, and symbol"
-      );
-      setPassword("");
-      return;
-    }
-    */
 
     try {
       const response = await fetch(`${API_BASE}/login`, {
@@ -74,7 +59,10 @@ function Login() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(data.detail || "Log failed. Please check your username and password and try again.");
+        setError(
+          data.detail ||
+            "Login failed. Please check your username and password and try again."
+        );
         return;
       }
 
@@ -87,29 +75,14 @@ function Login() {
       setUsername("");
       setPassword("");
 
-      // Redirect to home page after successful login
       navigate("/calculator");
-
-    } catch (error) { 
+    } catch (error) {
       setSuccess("");
       setError("An error occurred while logging in. Please try again.");
       return;
     }
-
-    /* const storedAccount = account.find(
-      (account) =>
-        account.username === username && account.password === password
-    ); */
-
-    /* if (!data.username && !data.password && !data.access_token) {
-      
-    } else {
-      setError("Account not found. Please sign up or try again.");
-      setPassword("");
-    } */
   };
 
-  // Handle signing up
   const validSignup = async () => {
     if (signupError !== "") {
       setSignupSuccess("");
@@ -120,15 +93,12 @@ function Login() {
       return;
     }
 
-    /*
-    const usernameTaken = account.some(
-      (account) => account.username === signupUsername
-    );
+    const gpaNumber = signupGpa === "" ? 0 : Number(signupGpa);
 
-    if (usernameTaken) {
-      setSignupError("This username is already taken.");
+    if (Number.isNaN(gpaNumber) || gpaNumber < 0 || gpaNumber > 4) {
+      setSignupError("GPA must be between 0 and 4.");
       return;
-    } */
+    }
 
     if (!validatePassword(signupPassword)) {
       setSignupError(
@@ -146,7 +116,6 @@ function Login() {
       return;
     }
 
-    // Send POST request to backend to create new user account and write to database
     try {
       const response = await fetch(`${API_BASE}/register`, {
         method: "POST",
@@ -155,37 +124,33 @@ function Login() {
         },
         body: JSON.stringify({
           username: signupUsername,
+          gpa: gpaNumber,
           password: signupPassword,
         }),
       });
 
       const data = await response.json();
 
-      if (!response.ok) {
+      if (!response.ok || !data.username || !data.access_token) {
         setSignupSuccess("");
-        setSignupError(data.detail || "An error occurred while creating the account.");
+        setSignupError(
+          data.detail || "An error occurred while creating the account."
+        );
         return;
       }
-    } catch (error) { 
+    } catch (error) {
       setSignupSuccess("");
       console.error("THE CRASH CAUSE:", error);
-      setSignupError("An error occurred while creating the account. Please try again.");
+      setSignupError(
+        "An error occurred while creating the account. Please try again."
+      );
       return;
     }
-
-    /*
-    setAccount([
-      ...account,
-      {
-        username: signupUsername,
-        password: signupPassword,
-      },
-    ]);
-    */
 
     setSignupSuccess("Account created successfully!");
     setSignupError("");
     setSignupUsername("");
+    setSignupGpa("");
     setSignupPassword("");
     setConfirmPassword("");
   };
@@ -245,6 +210,18 @@ function Login() {
             placeholder="Create Username"
             value={signupUsername}
             onChange={(e) => setSignupUsername(e.target.value)}
+          />
+        </div>
+
+        <div className="form-group">
+          <input
+            type="number"
+            step="0.01"
+            min="0"
+            max="4"
+            placeholder="GPA"
+            value={signupGpa}
+            onChange={(e) => setSignupGpa(e.target.value)}
           />
         </div>
 
