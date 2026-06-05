@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "./GradeCalculator.css";
 import AssignmentForm from "./CreateAssignment.js";
 import AssignmentList from "./AssignmentList";
+import GPACalculator from "./GPACalculator";
 import { useNavigate } from "react-router-dom";
 
 const GradeCalculator = () => {
@@ -225,6 +226,7 @@ const GradeCalculator = () => {
       courseName,
       assignments,
       categories,
+      units: savedCourses[courseName]?.units || 4,
     };
 
     setSavedCourses((prev) => {
@@ -271,6 +273,9 @@ const GradeCalculator = () => {
     setSelectedCourse(courseNameToLoad);
 
     setCourseKey(courseNameToLoad);
+    setSavedCourses((prev) => ({
+    ...prev,
+  }));
   };
 
   // Creating courses
@@ -342,8 +347,24 @@ useEffect(() => {
     loadFromDatabase(token);
   }
 }, []);
+// Saves all changes automatically in real time
+  useEffect(() => {
+    if (!selectedCourse) return;
 
+    setSavedCourses((prev) => ({
+      ...prev,
 
+      [selectedCourse]: {
+        ...prev[selectedCourse],
+
+        courseName,
+        assignments,
+        categories,
+
+        units: prev[selectedCourse]?.units || 4,
+      },
+    }));
+  }, [assignments, categories, courseName, selectedCourse]);
 
   return (
     <>
@@ -390,7 +411,8 @@ useEffect(() => {
           )}
         </div>
       </div>
-
+    <div className="GPA-layout">
+      <div className="calculator-container"></div>
       <div className="container">
         {" "}
         <h1>Grade Calculator</h1>{" "}
@@ -578,6 +600,12 @@ useEffect(() => {
             )}
           </div>
         </div>{" "}
+      </div>
+        <GPACalculator
+          savedCourses={savedCourses}
+          setSavedCourses={setSavedCourses}
+          computeGradeDetailed={computeGradeDetailed}
+        />
       </div>
     </>
   );
