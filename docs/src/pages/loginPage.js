@@ -1,3 +1,4 @@
+/*
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./loginPage.css";
@@ -213,19 +214,8 @@ function Login() {
           />
         </div>
 
-       {/* 
-        <div className="form-group">
-          <input
-            type="number"
-            step="0.01"
-            min="0"
-            max="4"
-            placeholder="GPA"
-            value={signupGpa}
-            onChange={(e) => setSignupGpa(e.target.value)}
-          />
-        </div> */}
-
+     
+/*
         <div className="form-group">
           <input
             type="password"
@@ -245,6 +235,111 @@ function Login() {
         </div>
 
         <button onClick={validSignup}>Sign Up</button>
+      </div>
+    </div>
+  );
+}
+
+export default Login; */
+
+import React, { useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import "./loginPage.css";
+
+const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000";
+
+function Login() {
+  const navigate = useNavigate();
+
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
+
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
+
+  const validLogin = async () => {
+    setError("");
+    setSuccess("");
+
+    if (!username || !password) {
+      setError("Login username or password cannot be left blank.");
+      return;
+    }
+
+    try {
+      const response = await fetch(`${API_BASE}/login`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          username,
+          password,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        setError(
+          data.detail ||
+            "Login failed. Please check your username and password and try again."
+        );
+        return;
+      }
+
+      localStorage.setItem("username", data.username);
+      localStorage.setItem("access_token", data.access_token);
+
+      setSuccess("Login successful!");
+      setUsername("");
+      setPassword("");
+
+      navigate("/calculator");
+    } catch (error) {
+      console.error("LOGIN CRASH CAUSE:", error);
+      setError("An error occurred while logging in. Please try again.");
+    }
+  };
+
+  return (
+    <div className="auth-container">
+      <div className="user-header">
+        Please log in to save your grades! :)
+      </div>
+
+      <div className="login-page">
+        <h1>Welcome Back!</h1>
+
+        {error && <p className="error">{error}</p>}
+        {success && <p className="success">{success}</p>}
+
+        <div className="form-group">
+          <input
+            type="text"
+            placeholder="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+          />
+        </div>
+
+        <div className="form-group">
+          <input
+            type="password"
+            placeholder="Password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+          />
+        </div>
+
+        <button onClick={validLogin}>Login</button>
+
+        <p className="auth-switch-text">
+          Don&apos;t have an account?{" "}
+          <Link to="/signup" className="auth-link">
+            Sign up here
+          </Link>
+        </p>
       </div>
     </div>
   );
