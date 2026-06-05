@@ -40,4 +40,11 @@ Read before doing *any* backend development and tests locally.
 3. Run "pip freeze > requirements.txt", this will capture all of the modules in the virtual environment into the requirements.txt file. Note that this will *overwrite* the file, so make sure you have all the necessary modules before overwriting it
 4. Push and commit requirements.txt (and your modified code if it is ready) both locally *and* to GitHub.
 
+# E2E test
+This is the guide to do the test
+1. npm install -D @playwright/test
+2. npx playwright install
+3. Run test in docs/tests
+4. npm install
+5. npx playwright test
 (More guides/notes may be added based on necessity.)
