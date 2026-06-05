@@ -149,24 +149,6 @@ const GradeCalculator = () => {
     return { final, breakdown };
   };
 
-  const handleSaveToDatabase = async () => {
-    const payload = {
-      course_name: courseName,
-      username: localStorage.getItem("username"),
-      final_grade: calculateGrade(),
-      grades: categories.map((cat) => ({
-        category_name: cat.name,
-        weight: cat.weight,
-        assignment_list: assignments
-          .filter((a) => a.category === cat.name)
-          .map((a) => ({
-            grade_name: a.assignmentName,
-            score: a.assignmentScore,
-            max_score: a.totalScore,
-          })),
-      })),
-    };
-
     console.log("categories:", categories);
     console.log("assignments:", assignments);
     console.log("payload:", payload);
@@ -216,6 +198,9 @@ const GradeCalculator = () => {
       return;
     }
 
+    setError("");
+    setSuccess("");
+
     const courseData = {
       courseName,
       assignments,
@@ -238,7 +223,27 @@ const GradeCalculator = () => {
     setSelectedCourse(courseName);
     setCourseKey(courseName);
 
-    await handleSaveToDatabase();
+    const payload = {
+      course_name: courseName,
+      grades: categories.map((cat) => ({
+        category_name: cat.name,
+        weight: cat.weight,
+        assignment_list: assignments
+          .filter((a) => a.category === cat.name)
+          .map((a) => ({
+            grade_name: a.assignmentName,
+            score: a.assignmentScore,
+            max_score: a.totalScore,
+          })),
+      })),
+    };
+
+    try {
+      await saveCourseToDatabase(payload);
+      setSuccess(`${courseName} saved!`);
+    } catch (error) {
+      setError(`Local save succeeded, DB upload failed: ${error.message}`);
+    }
   };
 
   // Store course in SQL
@@ -536,30 +541,6 @@ const fetchClassAverage = async () => {
               Delete Course
             </button>
           </div>
-          <div 
-            style={{
-              margin: "15px 0",
-              textAlign: "center",
-              display: "flex",
-              justifyContent: "center",
-              gap: "15px",
-            }}
-          >
-          <button
-            type="button"
-              onClick={handleSaveToDatabase}
-            style={{
-              padding: "10px 20px",
-              fontSize: "16px",
-              backgroundColor: "#1d9bf0",
-              color: "white",
-              borderRadius: "5px",
-              cursor: "pointer",
-              border: "none",
-            }}
-          >
-            Save Course to Database
-          </button>
 
           <button
             type="button"
