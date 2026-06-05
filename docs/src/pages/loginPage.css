@@ -14,7 +14,7 @@ body {
 .login-page {
   font-family: "Noto Sans Mono", monospace;
   margin: 50px auto;
-  max-width: 400px;
+  max-width: 500px;
   padding: 30px;
   border: 1px solid #ddd;
   border-radius: 8px;
@@ -73,7 +73,7 @@ button:hover {
   color: white;
   padding: 12px 20px;
   margin: 0px auto;
-  max-width: 4000px;
+  max-width: 8000px;
   border-radius: 4px;
   text-align: right;
   font-size: 24px;
