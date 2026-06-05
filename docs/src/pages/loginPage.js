@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./loginPage.css";
 
-const API_BASE = "https://finalgradecalculatorcs35l.duckdns.org";
+const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000";
 
 function Login() {
   const navigate = useNavigate();
@@ -31,6 +31,8 @@ function Login() {
   // Logging out
   const logout = () => {
     setShownUser(null);
+    localStorage.removeItem("username");
+    localStorage.removeItem("access_token");
   };
 
   // Handling login

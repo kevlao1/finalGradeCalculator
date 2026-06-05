@@ -509,3 +509,70 @@ def get_all_grades():
     finally:
         cur.close()
         conn.close()
+
+@app.get("/my_grades")
+def get_my_grades(username: str = Depends(get_current_user)):
+    conn = get_connection()
+    cur = conn.cursor()
+
+    try:
+        cur.execute(
+            """
+            SELECT
+                c.course_name,
+                cat.category_name,
+                cat.weight AS category_weight,
+                g.grade_name,
+                g.score,
+                g.max_score
+            FROM students s
+            JOIN grades g ON g.student_id = s.id
+            JOIN courses c ON g.course_id = c.id
+            LEFT JOIN categories cat ON g.category_id = cat.id
+            WHERE s.username = %s
+            ORDER BY c.course_name, cat.category_name, g.grade_name;
+            """,
+            (username,),
+        )
+
+        rows = cur.fetchall()
+
+        if not rows:
+            return {"courses": {}}
+
+        # Rebuild into the shape the frontend expects
+        courses = {}
+        for row in rows:
+            course_name, category_name, category_weight, grade_name, score, max_score = row
+
+            if course_name not in courses:
+                courses[course_name] = {
+                    "courseName": course_name,
+                    "assignments": [],
+                    "categories": [],
+                }
+
+            # Add category if not already added
+            cat_names = [c["name"] for c in courses[course_name]["categories"]]
+            if category_name and category_name not in cat_names:
+                courses[course_name]["categories"].append({
+                    "name": category_name,
+                    "weight": float(category_weight),
+                })
+
+            # Add assignment
+            courses[course_name]["assignments"].append({
+                "assignmentName": grade_name,
+                "category": category_name or "No category",
+                "assignmentScore": float(score),
+                "totalScore": float(max_score),
+            })
+
+        return {"courses": courses}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+    finally:
+        cur.close()
+        conn.close()
