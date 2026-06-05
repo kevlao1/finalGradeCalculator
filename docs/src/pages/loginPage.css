@@ -2,6 +2,13 @@
 
 body {
   background-color: rgb(181, 227, 242);
+  background-image: linear-gradient(to top, #fff1eb 0%, #ace0f9 100%);
+}
+
+.auth-container {
+  width: 100%;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .login-page {
