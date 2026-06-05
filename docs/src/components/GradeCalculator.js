@@ -21,6 +21,8 @@ const GradeCalculator = () => {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
+  const [courseKey, setCourseKey] = useState(null);
+
   const API_BASE = process.env.REACT_APP_API_BASE || "http://localhost:8000";
 
   const handleAddAssignment = (newAssignment) => {
@@ -211,7 +213,7 @@ const GradeCalculator = () => {
   const handleSaveToDatabase = async () => {
     const payload = {
       course_name: courseName,
-
+      username: localStorage.getItem("username"),
       grades: categories.map((cat) => ({
         category_name: cat.name,
         weight: cat.weight,
@@ -221,10 +223,20 @@ const GradeCalculator = () => {
             grade_name: a.assignmentName,
             score: a.assignmentScore,
             max_score: a.totalScore,
+            weight: a.weight
           })),
       })),
     };
+<<<<<<< HEAD
     
+=======
+
+    console.log("categories:", categories);
+    console.log("assignments:", assignments);
+    console.log("payload:", payload);
+    console.log("payload JSON:", JSON.stringify(payload, null, 2));
+
+>>>>>>> 57e14f3b13cc24f4008d697b3e43fa2c6f85adef
     try{
       const response = await fetch(`${API_BASE}/upload_grades`, {
         method: "POST",
@@ -237,12 +249,15 @@ const GradeCalculator = () => {
       const data = await response.json();
       if (response.ok) {
         alert(data.message || "Grades saved to SQL");
+        return;
       } else {
         alert("Save failed: " + (data.detail || "Unknown error"));
+        return;
       }
     } catch (error) {
       console.error("Network error:", error);
       alert("Could not connect");
+      return;
     }
   };
 
@@ -308,10 +323,10 @@ const GradeCalculator = () => {
 
   // Save course option
   const handleSaveCourse = () => {
-    if (setError !== "") {
+    if (error !== "") {
       setSuccess("");
     }
-    if (setSuccess !== "") {
+    if (success !== "") {
       setError("");
     }
 
@@ -326,10 +341,20 @@ const GradeCalculator = () => {
       categories,
     };
 
-    setSavedCourses((prev) => ({
-      ...prev,
-      [courseName]: courseData,
-    }));
+    setSavedCourses((prev) => {
+      const updated = { ...prev };
+
+      if (courseKey && courseKey !== courseName) {
+        delete updated[courseKey];
+      }
+
+      updated[courseName] = courseData;
+
+      return updated;
+    });
+
+    setSelectedCourse(courseName);
+    setCourseKey(courseName);
 
     setSuccess(`Saved ${courseName}!`);
   };
@@ -358,21 +383,30 @@ const GradeCalculator = () => {
     setCategories(course.categories);
 
     setSelectedCourse(courseNameToLoad);
+
+    setCourseKey(courseNameToLoad);
   };
 
   // Creating courses
   const createNewCourse = () => {
+    setSelectedCourse("");
     setCourseName("");
-
     setAssignments([]);
     setCategories([]);
+    setCourseKey(null);
+  
+    setBackendGrade(null);
+    setBackendError("");
+  
+    setSuccess("");
+    setError("");
   };
 
   const handleDeleteCourse = () => {
-    if (setError !== "") {
+    if (error !== "") {
       setSuccess("");
     }
-    if (setSuccess !== "") {
+    if (success !== "") {
       setError("");
     }
 
@@ -408,10 +442,18 @@ const GradeCalculator = () => {
           <div>
             <select
               value={selectedCourse}
-              onChange={(e) => handleLoadCourse(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+            
+                if (value === "") {
+                  createNewCourse();
+                } else {
+                  handleLoadCourse(value);
+                }
+              }}
             >
-              <option value="">Load Course</option>
-
+              <option value="">+ Add New Course</option>
+            
               {Object.keys(savedCourses).map((course) => (
                 <option key={course} value={course}>
                   {course}
