@@ -213,6 +213,7 @@ function Login() {
           />
         </div>
 
+       {/* 
         <div className="form-group">
           <input
             type="number"
@@ -223,7 +224,7 @@ function Login() {
             value={signupGpa}
             onChange={(e) => setSignupGpa(e.target.value)}
           />
-        </div>
+        </div> */}
 
         <div className="form-group">
           <input
