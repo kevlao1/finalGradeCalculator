@@ -222,10 +222,17 @@ def login_user(data: LoginRequest):
             #"student_id": student_id,
             "username": username,
         }
+
+    except HTTPException:
+        conn.rollback()
+        raise
     
     except Exception as e:
         conn.rollback()
-        return{"error": str(e)}
+        raise HTTPException(
+            status_code=500,
+            detail=str(e),
+        )
 
     finally:
         cur.close()
@@ -623,7 +630,6 @@ def get_my_grades(username: str = Depends(get_current_user)):
     finally:
         cur.close()
         conn.close()
-
 
 @app.get("/course_grade_report")
 def get_course_grade_report(course_name: str):
