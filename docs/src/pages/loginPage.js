@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import "./loginPage.css";
 
 function Login() {
+  const navigate = useNavigate();
+
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -80,6 +82,9 @@ function Login() {
       setShownUser(data.username);
       setUsername("");
       setPassword("");
+
+      // Redirect to home page after successful login
+      navigate("/calculator");
 
     } catch (error) { 
       setSuccess("");
