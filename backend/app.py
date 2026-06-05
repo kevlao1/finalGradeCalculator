@@ -132,7 +132,8 @@ def register_user(data: RegisterRequest):
 
     try:
         hashed_password = get_password_hash(data.password)
-        # 
+        
+        lowerUsername = data.username.lower()
         cur.execute(
             """
             INSERT INTO students (username, gpa, password_hash)
@@ -140,7 +141,7 @@ def register_user(data: RegisterRequest):
             ON CONFLICT DO NOTHING
             RETURNING id;
             """,
-            (data.username, data.gpa, hashed_password),
+            (lowerUsername, data.gpa, hashed_password),
         )
 
         created_user = cur.fetchone()
@@ -153,11 +154,11 @@ def register_user(data: RegisterRequest):
 
         conn.commit()
 
-        token = create_access_token(data={"sub": data.username})
+        token = create_access_token(data={"sub": lowerUsername})
     
         return {
             "message": "Account successfully created!",
-            "username": data.username,
+            "username": lowerUsername,
             "access_token": token,
             "student_id": created_user[0],
         }
@@ -198,12 +199,6 @@ def login_user(data: LoginRequest):
             )
 
         student_id, username, password_hash = user
-        
-        print(f"DEBUG: Attempting password check for user: {data.username}")
-        print(f"DEBUG: Stored hash: {password_hash}")
-        # Add this:
-        is_match = compare_password(data.password, password_hash)
-        print(f"DEBUG: Does password match? {is_match}")
 
         if not password_hash or not compare_password(data.password, password_hash):
             raise HTTPException(

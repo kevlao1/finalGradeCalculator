@@ -558,7 +558,7 @@ const fetchClassAverage = async () => {
               border: "none",
             }}
           >
-            Save Dashboard to Database
+            Save Course to Database
           </button>
 
           <button
