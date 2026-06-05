@@ -31,6 +31,8 @@ function Login() {
   // Logging out
   const logout = () => {
     setShownUser(null);
+    localStorage.removeItem("username");
+    localStorage.removeItem("access_token");
   };
 
   // Handling login
@@ -58,7 +60,7 @@ function Login() {
     */
 
     try {
-      const response = await fetch("http://localhost:8000/login", {
+      const response = await fetch(`${API_BASE}/login`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
