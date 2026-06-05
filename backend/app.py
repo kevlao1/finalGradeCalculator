@@ -139,7 +139,7 @@ def register_user(data: RegisterRequest):
         if not created_user:
             raise HTTPException(
                 status_code=400,
-                detail="Username or email already taken!",
+                detail="Username already taken!",
             )
 
         conn.commit()
@@ -181,7 +181,7 @@ def login_user(data: LoginRequest):
         if not user:
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid username or password",
+                detail="Invalid username",
             )
 
         student_id, username, password_hash = user
@@ -189,20 +189,21 @@ def login_user(data: LoginRequest):
         if not password_hash or not compare_password(data.password, password_hash):
             raise HTTPException(
                 status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Invalid username or password",
+                detail="Invalid password",
             )
 
         token = create_access_token(
             data={
                 "sub": username,
-                "student_id": student_id,
+                # "student_id": student_id,
             }
         )
 
+        # Return token and user info to frontend
         return {
             "access_token": token,
             "token_type": "bearer",
-            "student_id": student_id,
+            #"student_id": student_id,
             "username": username,
         }
     
