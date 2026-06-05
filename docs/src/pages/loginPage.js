@@ -171,6 +171,7 @@ function Login() {
       return;
     }
 
+    /*
     setAccount([
       ...account,
       {
@@ -178,6 +179,7 @@ function Login() {
         password: signupPassword,
       },
     ]);
+    */
 
     setSignupSuccess("Account created successfully!");
     setSignupError("");
