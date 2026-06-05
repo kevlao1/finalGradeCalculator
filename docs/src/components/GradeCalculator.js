@@ -209,14 +209,7 @@ const GradeCalculator = () => {
   const breakdown = detailedResult.breakdown || [];
 
   // Save course option
-  const handleSaveCourse = () => {
-    if (error !== "") {
-      setSuccess("");
-    }
-    if (success !== "") {
-      setError("");
-    }
-
+  const handleSaveCourse = async () => {
     if (!courseName.trim()) {
       setError("Please enter a course name.");
       return;
@@ -244,7 +237,7 @@ const GradeCalculator = () => {
     setSelectedCourse(courseName);
     setCourseKey(courseName);
 
-    setSuccess(`Saved ${courseName}!`);
+    await handleSaveToDatabase();
   };
 
   // Store course in SQL
@@ -521,23 +514,6 @@ useEffect(() => {
               className="delete-course"
             >
               Delete Course
-            </button>
-          </div>
-          <div style={{ margin: "15px 0", textAlign: "center" }}>
-            <button
-              type="button"
-              onClick={handleSaveToDatabase}
-              style={{
-                padding: "10px 20px",
-                fontSize: "16px",
-                backgroundColor: "#1d9bf0",
-                color: "white",
-                borderRadius: "5px",
-                cursor: "pointer",
-                border: "none",
-              }}
-            >
-              Save Dashboard to Database
             </button>
           </div>
           <AssignmentList
