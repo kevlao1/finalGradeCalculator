@@ -198,8 +198,8 @@ function VisualPage() {
             <thead>
               <tr>
                 <th>Student</th>
-                <th>GPA</th>
-                <th>Final Score</th>
+                <th>Letter Grade</th>
+                <th>Numerical Grade</th>
                 <th>Assignments</th>
               </tr>
             </thead>
@@ -209,9 +209,11 @@ function VisualPage() {
                 <tr key={student.name}>
                   <td>{student.name}</td>
                   <td>
-                    {student.gpa !== null && student.gpa !== undefined
-                      ? Number(student.gpa).toFixed(2)
-                      : "N/A"}
+                      {student.score >= 90 ? "A" :
+                      student.score >= 80 ? "B" :
+                      student.score >= 70 ? "C" :
+                      student.score >= 60 ? "D" : 
+                      student.score != null ? "F" : "N/A"}
                   </td>
                   <td>{student.score?.toFixed(2)}%</td>
                   <td>
