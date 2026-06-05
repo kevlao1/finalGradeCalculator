@@ -35,6 +35,14 @@ CREATE TABLE grades (
     assignment_weight NUMERIC DEFAULT 0
 );
 
+CREATE TABLE course_grades (
+    id SERIAL PRIMARY KEY,
+    student_id INTEGER NOT NULL REFERENCES students(id) ON DELETE CASCADE,
+    course_id INTEGER NOT NULL REFERENCES courses(id) ON DELETE CASCADE,
+    final_grade NUMERIC NOT NULL,
+    UNIQUE (student_id, course_id)
+);
+
 -- Helpful view-like query for checking inserted data
 SELECT
     students.username,
