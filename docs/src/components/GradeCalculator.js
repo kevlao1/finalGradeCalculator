@@ -319,10 +319,10 @@ const GradeCalculator = () => {
 
   // Save course option
   const handleSaveCourse = () => {
-    if (setError !== "") {
+    if (error !== "") {
       setSuccess("");
     }
-    if (setSuccess !== "") {
+    if (success !== "") {
       setError("");
     }
 
@@ -349,9 +349,8 @@ const GradeCalculator = () => {
       return updated;
     });
 
-    setCourseName("");
-    setAssignments([]);
-    setCategories([]);
+    setSelectedCourse(courseName);
+    setCourseKey(courseName);
 
     setSuccess(`Saved ${courseName}!`);
   };
@@ -386,17 +385,24 @@ const GradeCalculator = () => {
 
   // Creating courses
   const createNewCourse = () => {
+    setSelectedCourse("");
     setCourseName("");
-
     setAssignments([]);
     setCategories([]);
+    setCourseKey(null);
+  
+    setBackendGrade(null);
+    setBackendError("");
+  
+    setSuccess("");
+    setError("");
   };
 
   const handleDeleteCourse = () => {
-    if (setError !== "") {
+    if (error !== "") {
       setSuccess("");
     }
-    if (setSuccess !== "") {
+    if (success !== "") {
       setError("");
     }
 
@@ -432,10 +438,18 @@ const GradeCalculator = () => {
           <div>
             <select
               value={selectedCourse}
-              onChange={(e) => handleLoadCourse(e.target.value)}
+              onChange={(e) => {
+                const value = e.target.value;
+            
+                if (value === "") {
+                  createNewCourse();
+                } else {
+                  handleLoadCourse(value);
+                }
+              }}
             >
-              <option value="">Load Course</option>
-
+              <option value="">+ Add New Course</option>
+            
               {Object.keys(savedCourses).map((course) => (
                 <option key={course} value={course}>
                   {course}
