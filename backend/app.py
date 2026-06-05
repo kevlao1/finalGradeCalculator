@@ -177,7 +177,7 @@ def login_user(data: LoginRequest):
             """
             SELECT id, username, password_hash
             FROM students
-            WHERE username = %s;
+            WHERE LOWER(username) = LOWER(%s);
             """,
             (data.username,),
         )
