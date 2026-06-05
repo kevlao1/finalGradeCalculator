@@ -164,16 +164,12 @@ const GradeCalculator = () => {
           })),
       })),
     };
-<<<<<<< HEAD
-    
-=======
 
     console.log("categories:", categories);
     console.log("assignments:", assignments);
     console.log("payload:", payload);
     console.log("payload JSON:", JSON.stringify(payload, null, 2));
 
->>>>>>> 57e14f3b13cc24f4008d697b3e43fa2c6f85adef
     try{
       const response = await fetch(`${API_BASE}/upload_grades`, {
         method: "POST",

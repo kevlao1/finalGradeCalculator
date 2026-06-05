@@ -78,7 +78,7 @@ def get_current_user(token: str = Depends(oauth2_scheme)) -> str:
             )
         return username
 
-    except JWTError:
+    except PyJWTError:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Invalid token",
