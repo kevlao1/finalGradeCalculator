@@ -2,6 +2,8 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./loginPage.css";
 
+const API_BASE = "https://finalgradecalculatorcs35l.duckdns.org";
+
 function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -103,7 +105,7 @@ function Login() {
 
     // Send POST request to backend to create new user account and write to database
     try {
-      const response = await fetch("http://localhost:8000/register", {
+      const response = await fetch(`${API_BASE}/register`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -123,6 +125,7 @@ function Login() {
       }
     } catch (error) { 
       setSignupSuccess("");
+      console.error("THE CRASH CAUSE:", error);
       setSignupError("An error occurred while creating the account. Please try again.");
       return;
     }
