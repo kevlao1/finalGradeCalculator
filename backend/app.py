@@ -1,6 +1,6 @@
 from datetime import datetime, timedelta, timezone
 from typing import Optional
-
+import os
 import jwt
 import psycopg2
 from fastapi import Depends, FastAPI, HTTPException, status
@@ -11,24 +11,21 @@ from fastapi.staticfiles import StaticFiles
 from jwt import PyJWTError
 from pydantic import BaseModel, Field
 import bcrypt
-from .Calculator import StatsTools
-from .visualization import GradeVisualizer
-
+from Calculator import StatsTools
+from visualization import GradeVisualizer
+from dotenv import load_dotenv
 from fastapi.staticfiles import StaticFiles
-
-
-
 
 app = FastAPI()
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 # Allow React frontend to call FastAPI backend
+origins_str = os.getenv("ALLOWED_ORIGINS", "http://localhost:3000")
+origins_list = origins_str.split(",")
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[
-        "http://localhost:3000",
-        "https://kevlao1.github.io",
-    ],
+    allow_origins=origins_list,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -37,11 +34,11 @@ app.add_middleware(
 # Database connection helper
 def get_connection():
     return psycopg2.connect(
-        dbname="finalgrade",
-        user="team19",
-        password="CS35L Team19",
-        host="localhost",
-        port="5432",
+        dbname=os.getenv("DB_NAME"),
+        user=os.getenv("DB_USER"),
+        password=os.getenv("DB_PASSWORD"),
+        host=os.getenv("DB_HOST", "localhost"),
+        port=os.getenv("DB_PORT", "5432")
     )
 
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")

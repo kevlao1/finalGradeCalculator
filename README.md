@@ -1,6 +1,6 @@
-Hi! This is for the UCLA CS35L Final Project. Below will be guides and notes before running this repository.
+Hi! This is for the UCLA CS35L Final Project, hosted by Kevin Lao, Lauren Nguyen, Logan So, and Joseph . Below will be guides and notes before running this repository.
 
-# How To Run This App Locally
+# How To Run This App
 ## Note: This guide assumes that you have the following: Python 3.10+, Node.js v18+, PostgreSQL v14+. This is done best via VS Code.
 This process has been streamlined for your convenience, with the necessary commands in either quotation marks or paranthesis. That being said, there are still a few steps to run this locally with complete functionality; you will need to do the following:
 It is recommended that you have *two* terminals open; you will see why in a few steps.
@@ -8,9 +8,24 @@ It is recommended that you have *two* terminals open; you will see why in a few 
 2. Set your current directory to be docs (via cd docs), then run "npm install". This downloads the necessary modules for the website UI to run.
 3. Exit the docs folder back into the finalGradeCalculator. Now set up the virtual environment for Python by running "python3 -m venv .venv && source .venv/bin/activate && pip install -r requirements.txt". This installs all the required Python modules for the logic in the backend folder to run properly.
 4. This program uses an SQL database, thus tables must be made. In order to do so, log into the PostgreSQL shell (psql postgres). After, these commands must be run (replacing <dev_user> with your username and <password> with your password): "CREATE DATABASE grade_calculator;", "CREATE USER <dev_user> WITH ENCRYPTED PASSWORD '<password>';", and "GRANT ALL PRIVILEGES ON DATABASE grade_calculator TO <dev_user>;". Exit the PostgreSQL shell (\q), then run "psql -h localhost -U <dev_user> -d grade_calculator -f grade.sql" to set up the tables. 
-5. With all the necessary modules downloaded, we now have to start the website and back end. Enter the backend folder (cd backend) and run "python -m uvicorn app:app --host 127.0.0.1 --port 8000". This starts local port 8000 to run the Python server necessary for the database. Exit back to finalGradeCalculator then enter docs. Run "npm start". The website will open at port 3000.
-The website is now fully functional.
+5. Create a new .env file in the backend folder named ".env", following the format provided in ".env.example" (also found in the backend folder). (If you are running this on a server, create another file in the docs folder named ".env.production" that is based off of ".env.productionexample".)
+6. With all the necessary modules downloaded, we now have to start the website and back end. Enter the backend folder (cd backend) and run "python -m uvicorn app:app --host 127.0.0.1 --port 8000". This starts local port 8000 to run the Python server necessary for the database. Exit back to finalGradeCalculator then enter docs. Run "npm start". The website will open at port 3000 if it is free.
+The app is now fully functional.
 
+# How to run E2E tests
+This is the guide to do the tests via commands:
+1. npm install -D @playwright/test
+2. npx playwright install
+3. Run test in docs/tests
+4. npm install
+5. npx playwright test
+The tests provided should run and pass.
+
+# Notes
+- The program automatically lowercases any and all usernames upon creation to avoid a bug. Usernames are also unique.
+- In order for the .env files to work for this app, you may need to enable an option known as "python.terminal.useEnvFile". You can do this by opening VS Code settings and pasting "python.terminal.useEnvFile" into the search bar, then enabling the checkbox.
+- For 24/7 activity, it is preferable to run this on a server. We used AWS for hosting, they have a good 6-month free plan.
+- Due to the nature of .gitignore, any newly created .env file that *isn't* .env or .env.production will be saved in the repository. This can be rectified by including the line ".env*" in .gitignore.
 
 # Depreciated Guides
 ## These guides were written earlier in the development process and should not be relied on for any work. However, you may find this helpful when trying to add onto this code, if the above guide is too confusing, or if you are interested in how ghfiles or virtual environments were used.
@@ -39,12 +54,4 @@ Read before doing *any* backend development and tests locally.
 2. Install the module in your virtual environment
 3. Run "pip freeze > requirements.txt", this will capture all of the modules in the virtual environment into the requirements.txt file. Note that this will *overwrite* the file, so make sure you have all the necessary modules before overwriting it
 4. Push and commit requirements.txt (and your modified code if it is ready) both locally *and* to GitHub.
-
-# E2E test
-This is the guide to do the test
-1. npm install -D @playwright/test
-2. npx playwright install
-3. Run test in docs/tests
-4. npm install
-5. npx playwright test
 (More guides/notes may be added based on necessity.)
