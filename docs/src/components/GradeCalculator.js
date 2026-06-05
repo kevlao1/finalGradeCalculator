@@ -2,8 +2,10 @@ import React, { useState, useEffect } from "react";
 import "./GradeCalculator.css";
 import AssignmentForm from "./CreateAssignment.js";
 import AssignmentList from "./AssignmentList";
+import { useNavigate } from "react-router-dom";
 
 const GradeCalculator = () => {
+  const navigate = useNavigate();
   const [assignments, setAssignments] = useState([]);
   const [categories, setCategories] = useState([]);
   const weightedMode = categories.length > 0;
@@ -29,6 +31,9 @@ const GradeCalculator = () => {
   // Logging out
   const logout = () => {
     setShownUser(null);
+    localStorage.removeItem("username");
+    localStorage.removeItem("access_token");
+    navigate("/");
   };
 
   const addCategory = (name, weight) => {
@@ -338,6 +343,8 @@ useEffect(() => {
   }
 }, []);
 
+
+
   return (
     <>
       <div className="user-header">
@@ -371,12 +378,12 @@ useEffect(() => {
             </select>
           </div>
           <span>
-            {shownUser
-              ? `Hi, ${shownUser}!  `
+            {localStorage.getItem("username")
+              ? `Hi, ${localStorage.getItem("username")}!  `
               : "Please log in to save your grades!"}
           </span>
 
-          {shownUser && (
+          {localStorage.getItem("access_token") && (
             <button className="logout-button" onClick={logout}>
               Log Out
             </button>
