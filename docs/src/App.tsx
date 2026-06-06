@@ -25,7 +25,7 @@ function App() {
 export default App; */
 
 import React from "react";
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { HashRouter, Routes, Route, Navigate } from "react-router-dom";
 import "./styles.css";
 
 import GradeCalculator from "./components/GradeCalculator";
@@ -35,7 +35,7 @@ import Signup from "./pages/signUpPage";
 
 function App() {
   return (
-    <BrowserRouter basename="/finalGradeCalculator">
+    <HashRouter basename="/finalGradeCalculator">
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
 
@@ -47,7 +47,7 @@ function App() {
 
         <Route path="*" element={<Navigate to="/login" />} />
       </Routes>
-    </BrowserRouter>
+    </HashRouter>
   );
 }
 
