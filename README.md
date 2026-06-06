@@ -4,6 +4,7 @@ Hi! This is for the UCLA CS35L Final Project, hosted by Kevin Lao, Lauren Nguyen
 - This app uses the libraries and languages of JavaScript (both Node and React, with the appropriate CSS and HTML files) for the website, PostgreSQL for the database, and Python for backend logic. This build also uses a few .tsx files, converted to static JS files upon building the website via gh-pages.
 - In order to provide security, this app requires a login in order to access the calculator. It utilizes the JWT token system, providing a temporary token to an ordinary user. Additionally, the password provided must meet the criteria for a secure password (8 characters minimum, at least one special character, at least one uppercase and one lowercase letter, and a number) and is hashed when stored during account creation via bcrypt.
 - The website is currently running on an AWS server, which should provide approximately 24/7 coverage (until our free plan ends).
+- The three big features that are present in this is the live GPA calculator which updates automatically alongside the course calculator when units for each class are inputted, the unique category weighting system present in the course calculator, and the grade visualizer.
 
 # How To Run This App
 ## Note: This guide assumes that you have the following: Python 3.10+, Node.js v18+, PostgreSQL v14+. This is done best via VS Code.
@@ -31,6 +32,17 @@ The tests provided should run and pass.
 - In order for the .env files to work for this app, you may need to enable an option known as "python.terminal.useEnvFile". You can do this by opening VS Code settings and pasting "python.terminal.useEnvFile" into the search bar, then enabling the checkbox.
 - For 24/7 activity, it is preferable to run this on a server. We used AWS for hosting, they have a good 6-month free plan.
 - Due to the nature of .gitignore, any newly created .env file that *isn't* .env or .env.production will be saved in the repository. This can be rectified by including the line ".env*" in .gitignore.
+
+# Diagrams
+Below are two diagrams that attempt to summarize the data structure of the database and the account register and login functions.
+
+![DataDiagram](READMEimages/DataDiagram.jpg)
+This diagram relates a number of student accounts (with a username, password hash, and GPA) to a number of courses (with a final grade and units). Each course contains a number of categories containing a weight, with each category containing a number of assignments (with the assignment name, score, and maximum score).
+
+![AccountFunctionDiagram](READMEimages/AccountFunctionDiagram.jpg)
+This diagram tracks the behavior of each function relating to the sign-up and login of an account. 
+For signing up, the user presses the button that sends Signup() to the website, which determines if the username and password combination are valid. If the password does not meet the specifications or if the username is invalid, the website will output an error; if no conditions are violated, the combination is sent to the server. The server checks if the same username is present: if it does, then it sends back an error to the website which outputs it. If not, it saves the password hashed alongside the username and assigns it an ID. The server then sends the successful code to the website, which outputs a successful creation.
+For logging in, a similar process happens. The user presses the button that sends Login() to the website, which checks if either field is empty. If one is, the server sends an error; if neither are, the website sends it to the server, where the database checks for the username and compares the hashes. If the password is incorrect or if the username isn't found, the server sends an error code back to the website, which then outputs an error message. If one is found, then a JWT token is issued for the user, and a successful code is sent to the website, which outputs the successful login and redirects the user to the calculator.
 
 # Depreciated Guides
 ## These guides were written earlier in the development process and should not be relied on for any work. However, you may find this helpful when trying to add onto this code, if the above guide is too confusing, or if you are interested in how ghfiles or virtual environments were used.
