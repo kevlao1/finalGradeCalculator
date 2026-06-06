@@ -3,7 +3,14 @@
 /* Whole page */
 body {
   margin: 0;
+}
+
+/* Report page wrapper */
+.report-page {
   min-height: 100vh;
+  padding: 40px 50px;
+  box-sizing: border-box;
+
   font-family: "Noto Sans Mono", monospace;
   color: #eaf7ff;
 
@@ -14,13 +21,6 @@ body {
     linear-gradient(135deg, #07111f 0%, #0b2036 45%, #071827 100%);
 
   background-attachment: fixed;
-}
-
-/* Report page wrapper */
-.report-page {
-  min-height: 100vh;
-  padding: 40px 50px;
-  box-sizing: border-box;
 }
 
 /* Main glass panel */
