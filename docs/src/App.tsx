@@ -35,7 +35,7 @@ import Signup from "./pages/signUpPage";
 
 function App() {
   return (
-    <HashRouter basename="/finalGradeCalculator">
+    <HashRouter>
       <Routes>
         <Route path="/" element={<Navigate to="/login" />} />
 
