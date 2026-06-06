@@ -51,7 +51,7 @@ function VisualPage() {
   }, [courseName]);
 
   return (
-    <div style={{ padding: "20px" }}>
+    <div className="report-page">
       <div
         style={{
           marginBottom: "20px",
